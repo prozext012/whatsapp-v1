@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#FFD93D"/>
+<title>VEXZANO Chat</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin/>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin/>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js" crossorigin/>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js" crossorigin/>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js" crossorigin/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--yellow:#FFD93D;--cream:#FFFDF0;--cream2:#FFF8DC;--purple:#8B5CF6;--pink:#EC4899;--cyan:#22D3EE;--green:#22C55E;--red:#EF4444;--orange:#FB923C;--blue:#3B82F6;--black:#0A0A0A;--white:#fff;--text:#0A0A0A;--muted:#6B7280;--border:3px solid #0A0A0A;--shadow:4px 4px 0 #0A0A0A;--shadow-sm:2px 2px 0 #0A0A0A}
+[data-theme="dark"]{--cream:#1a1a1a;--cream2:#252525;--white:#2a2a2a;--text:#fff;--muted:#9CA3AF;--border:3px solid #fff;--shadow:4px 4px 0 #fff;--shadow-sm:2px 2px 0 #fff}
+[data-theme="sakura"]{--yellow:#FBCFE8;--cream:#FDF2F8;--cream2:#FCE7F3;--purple:#EC4899;--cyan:#F9A8D4}
+[data-theme="mint"]{--yellow:#A7F3D0;--cream:#ECFDF5;--cream2:#D1FAE5;--purple:#10B981;--cyan:#6EE7B7}
+[data-theme="samudra"]{--yellow:#BAE6FD;--cream:#F0F9FF;--cream2:#E0F2FE;--purple:#0284C7;--cyan:#7DD3FC}
+[data-theme="minimal"]{--yellow:#F3F4F6;--cream:#FAFAFA;--cream2:#F5F5F5;--purple:#111;--border:2px solid #E5E7EB;--shadow:none;--shadow-sm:none}
+[data-theme="glass"]{--yellow:#E0E7FF;--cream:#F5F3FF;--cream2:#EDE9FE;--purple:#7C3AED;--cyan:#C4B5FD;--border:2px solid rgba(0,0,0,.15);--shadow:0 8px 32px rgba(124,58,237,.2)}
+html,body{height:100%;overscroll-behavior:none}
+body{font-family:'Segoe UI',-apple-system,Roboto,sans-serif;background:var(--cream2);color:var(--text);overflow:hidden;display:flex;justify-content:center}
+#app{width:100%;max-width:500px;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;background:var(--cream);overflow:hidden}
+button,input,textarea,select{font-family:inherit;outline:none;border:none;background:none;color:inherit;font-size:15px}
+input,textarea,select{background:var(--white);border:var(--border);color:var(--text);padding:12px 16px;border-radius:14px;width:100%;font-weight:600}
+input:focus,textarea:focus{border-color:var(--purple)}
+button{cursor:pointer;font-weight:700}
+.btn{background:var(--purple);color:#fff;padding:12px 20px;border-radius:14px;font-weight:800;border:var(--border);box-shadow:var(--shadow-sm);transition:.1s;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-transform:uppercase;font-size:12px;letter-spacing:.3px}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.cyan{background:var(--cyan);color:#0A0A0A}
+.btn.pink{background:var(--pink);color:#fff}
+.btn.yellow{background:var(--yellow);color:#0A0A0A}
+.btn.green{background:var(--green);color:#fff}
+.btn.ghost{background:var(--white);color:var(--text)}
+.btn.danger{background:var(--red);color:#fff}
+.btn.blue{background:var(--blue);color:#fff}
+.btn.orange{background:var(--orange);color:#fff}
+.btn.small{padding:8px 14px;font-size:10px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5}
+.hidden{display:none!important}
+#loading{position:fixed;inset:0;background:var(--cream);z-index:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.spinner{width:44px;height:44px;border:4px solid var(--yellow);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite}
+.spinner.sm{width:26px;height:26px;border-width:3px;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fillBar{to{width:100%}}
+#auth{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,var(--yellow) 0%,var(--yellow) 40%,var(--cream) 40%)}
+#auth .logo{width:90px;height:90px;border-radius:24px;background:var(--purple);border:var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:18px;color:#fff;font-weight:900}
+#auth h1{font-size:30px;font-weight:900;margin-bottom:4px;color:#0A0A0A;letter-spacing:-1px}
+#auth p.sub{color:#333;margin-bottom:22px;font-size:13px;font-weight:700}
+#auth .card{width:100%;max-width:400px;background:var(--white);padding:22px;border-radius:20px;border:var(--border);box-shadow:var(--shadow)}
+#auth .card h2{font-size:18px;margin-bottom:16px;font-weight:900;text-transform:uppercase}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--text);margin-bottom:6px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.toggleAuth{text-align:center;margin-top:14px;font-size:13px;color:var(--muted);font-weight:700}
+.toggleAuth a{color:var(--purple);text-decoration:none;font-weight:900}
+.error{color:var(--red);font-size:12px;margin-top:10px;text-align:center;font-weight:800;padding:8px;background:#FEF2F2;border:2px solid var(--red);border-radius:10px}
+.header{background:var(--yellow);padding:12px 14px;display:flex;align-items:center;gap:10px;z-index:5;border-bottom:var(--border);flex-shrink:0}
+.header.dark{background:var(--purple);color:#fff}
+.header .title{font-weight:900;font-size:15px;color:#0A0A0A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.15}
+.header.dark .title{color:#fff}
+.header .sub{font-size:10px;font-weight:800;color:var(--green);text-transform:uppercase}
+.header.dark .sub{color:var(--yellow)}
+.iconBtn{width:38px;height:38px;border-radius:12px;background:var(--white);color:#0A0A0A;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #0A0A0A;font-weight:900;box-shadow:2px 2px 0 #0A0A0A}
+.iconBtn:active{transform:translate(2px,2px);box-shadow:none}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;flex-shrink:0;font-size:17px;overflow:hidden;background-size:cover;background-position:center;border:3px solid #0A0A0A;position:relative;cursor:pointer}
+.avatar.sm{width:36px;height:36px;font-size:14px;border-width:2px}
+.avatar.xl{width:100px;height:100px;font-size:40px;border-width:3px;box-shadow:var(--shadow)}
+.avatar.badge::after{content:'';position:absolute;bottom:0;right:0;width:13px;height:13px;background:var(--green);border-radius:50%;border:2px solid #0A0A0A}
+.bigAv{width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid #0A0A0A}
+#main{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:110px;-webkit-overflow-scrolling:touch}
+.searchWrap{padding:10px 12px}
+.searchBox{display:flex;align-items:center;gap:8px;background:var(--white);border:var(--border);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow-sm)}
+.searchBox input{background:none;border:none;padding:0;flex:1;font-size:14px;font-weight:700;box-shadow:none}
+.searchBox input:focus{box-shadow:none;border:none}
+.chips{display:flex;gap:6px;padding:2px 12px 10px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:7px 16px;border-radius:20px;background:var(--white);border:2px solid #0A0A0A;color:var(--text);font-size:11px;font-weight:900;white-space:nowrap;box-shadow:2px 2px 0 #0A0A0A;text-transform:uppercase}
+.chip.active{background:var(--purple);color:#fff}
+.chip:active{transform:translate(2px,2px);box-shadow:none}
+.listItem{display:flex;gap:10px;padding:11px 12px;cursor:pointer;align-items:center;border-bottom:2px solid #F0F0F0;position:relative;background:var(--cream)}
+.listItem .info{flex:1;min-width:0}
+.listItem .info .name{font-weight:900;font-size:14px;margin-bottom:2px;display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.listItem .info .last{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.listItem .time{color:var(--muted);font-size:10px;font-weight:800;flex-shrink:0}
+.verify-badge{display:inline-block;width:14px;height:14px;background:var(--orange);border-radius:50%;color:#fff;font-size:9px;line-height:14px;text-align:center;font-weight:900;border:1.5px solid #0A0A0A}
+.welcome{text-align:center;padding:40px 24px;color:var(--muted)}
+.welcome .em{font-size:44px;margin-bottom:12px;font-weight:900}
+.welcome h3{color:var(--text);font-size:16px;font-weight:900;margin-bottom:6px;text-transform:uppercase}
+.welcome p{font-size:13px;line-height:1.5;margin-bottom:8px;font-weight:600}
+.welcome b{color:var(--purple);font-weight:900}
+.emptyBox{text-align:center;padding:20px;color:var(--muted);font-weight:800;font-size:12px}
+.loadMore{text-align:center;padding:12px}
+.storySection{padding:14px 12px 4px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:900;letter-spacing:1px}
+.small{font-size:11px;font-weight:700}
+:where(.small):not(.btn){color:var(--muted)}
+.tag{font-size:10px;font-weight:900;background:var(--yellow);border:2px solid #0A0A0A;border-radius:6px;padding:1px 5px;color:#0A0A0A}
+.dot{width:10px;height:10px;background:var(--red);border-radius:50%;flex-shrink:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.selLine{font-size:12px;font-weight:800;margin-top:6px;color:var(--muted)}
+.pickList{max-height:200px;overflow-y:auto;margin-top:8px}
+.pickRow{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:2px solid #F0F0F0;cursor:pointer}
+.pickRow .pname{flex:1;font-weight:900;font-size:13px}
+.pickRow .pname span{color:var(--muted);font-weight:700;font-size:11px;margin-left:4px}
+.pickRow .pmark{font-weight:900;color:var(--green)}
+.inviteBox{background:var(--yellow);border:2px solid #0A0A0A;border-radius:14px;padding:12px;margin:10px 0;box-shadow:2px 2px 0 #0A0A0A}
+.inviteBox .ib-t{font-size:12px;font-weight:900;margin-bottom:6px}
+.inviteBox .ib-l{background:#fff;padding:8px;border-radius:8px;border:2px solid #0A0A0A;font-size:11px;word-break:break-all;font-weight:700;margin-bottom:8px;color:#0A0A0A}
+#nav{position:absolute;bottom:14px;left:14px;right:14px;background:var(--white);display:flex;z-index:10;border-radius:26px;border:var(--border);box-shadow:var(--shadow);padding:8px 6px;align-items:center;justify-content:space-between}
+#nav .tab{flex:1;padding:8px 2px;text-align:center;color:var(--muted);font-size:10px;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:2px;text-transform:uppercase;border-radius:14px}
+#nav .tab .em{font-size:20px}
+#nav .tab.active{color:var(--purple)}
+#musicFab{position:fixed;bottom:96px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--purple);color:#fff;font-size:15px;display:none;align-items:center;justify-content:center;z-index:15;border:3px solid #0A0A0A;box-shadow:3px 3px 0 #0A0A0A;font-weight:900;cursor:pointer}
+#musicFab.show{display:flex}
+#musicFab.spinning{animation:spin 3s linear infinite}
+#musicFab:active{transform:translate(3px,3px);box-shadow:none}
+#musicPlayer{position:fixed;top:auto;bottom:100px;left:50%;transform:translateX(-50%);width:320px;max-width:90vw;background:var(--purple);color:#fff;border-radius:18px;padding:10px 12px;display:none;align-items:center;gap:10px;z-index:9999;box-shadow:var(--shadow);border:var(--border);cursor:grab;touch-action:none;user-select:none}
+#musicPlayer.show{display:flex}
+#musicPlayer.dragging{cursor:grabbing;opacity:.9}
+#musicPlayer .cover{width:44px;height:44px;border-radius:10px;background:rgba(0,0,0,.2);background-size:cover;background-position:center;flex-shrink:0;border:2px solid #0A0A0A;pointer-events:none}
+#musicPlayer .info{flex:1;min-width:0;pointer-events:none}
+#musicPlayer .info .songTitle{font-size:12px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#musicPlayer .info .songArtist{font-size:10px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+#musicPlayer button{background:rgba(0,0,0,.3);width:34px;height:34px;border-radius:50%;color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #0A0A0A;font-weight:900;cursor:pointer}
+#musicPlayer .progressBar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.3);pointer-events:none}
+#musicPlayer .progressBar .fill{height:100%;width:0;background:var(--yellow)}
+#musicPlayer .dragHandle{position:absolute;top:2px;left:50%;transform:translateX(-50%);width:40px;height:4px;background:rgba(255,255,255,.4);border-radius:2px}
+#chatView{position:absolute;inset:0;background:var(--cream);display:flex;flex-direction:column;z-index:20;transform:translateX(100%);transition:transform .25s ease}
+#chatView.open{transform:translateX(0)}
+#messages{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.msgWrap{position:relative;display:flex;width:100%}
+.bubble{max-width:80%;padding:9px 13px;border-radius:16px;word-wrap:break-word;font-size:15px;line-height:1.4;position:relative;font-weight:600;border:2px solid #0A0A0A;box-shadow:2px 2px 0 #0A0A0A}
+.bubble.in{background:var(--white);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.out{background:var(--purple);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bubble .meta{display:block;font-size:10px;opacity:.7;margin-top:3px;text-align:right;font-weight:800}
+.bubble .sender{font-size:11px;font-weight:900;color:var(--purple);display:block;margin-bottom:3px}
+.bubble.out .sender{color:var(--yellow)}
+.bubble a{color:var(--purple);text-decoration:underline;font-weight:800}
+.bubble.out a{color:var(--yellow)}
+.bubble.sticker{background:transparent!important;font-size:60px;padding:0;max-width:100px;line-height:1;border:none;box-shadow:none}
+.bubble audio{width:220px;max-width:100%;height:34px}
+.bubble img.att,.bubble video.att{max-width:100%;border-radius:10px;display:block;margin-bottom:4px;border:2px solid #0A0A0A;cursor:pointer}
+.bubble .fname{font-size:11px;font-weight:700;margin-top:2px}
+.bubble .reply{background:rgba(0,0,0,.08);border-left:3px solid var(--purple);padding:5px 8px;border-radius:6px;margin-bottom:5px;font-size:12px}
+.bubble.out .reply{background:rgba(255,255,255,.15);border-left-color:var(--yellow)}
+.bubble .reply b{display:block;font-size:10px;margin-bottom:1px;font-weight:900}
+.bubble .edited{font-size:9px;opacity:.7;font-style:italic;font-weight:700}
+.bubble .pollOpt{padding:4px 8px;background:rgba(0,0,0,.1);border-radius:6px;margin-top:3px;font-size:12px;font-weight:700}
+.msgWrap .actionsRow{position:absolute;top:-30px;right:0;background:var(--white);border:2px solid #0A0A0A;border-radius:12px;padding:3px;display:none;gap:2px;box-shadow:2px 2px 0 #0A0A0A;z-index:5}
+.msgWrap.show-actions .actionsRow{display:flex}
+.msgWrap .actionsRow button{width:26px;height:26px;border-radius:8px;font-size:11px;background:transparent;font-weight:900}
+.msgWrap .actionsRow button:hover{background:var(--yellow)}
+.fileCard{display:flex;gap:10px;align-items:center;padding:8px;background:rgba(0,0,0,.08);border-radius:10px;margin:4px 0;text-decoration:none;color:inherit}
+.fileCard .fileIcon{font-size:24px;flex-shrink:0;font-weight:900}
+.fileCard .fileInfo{flex:1;min-width:0}
+.fileCard .fileName{font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fileCard .fileSize{font-size:10px;opacity:.7;font-weight:700}
+#composer{background:var(--yellow);padding:8px;display:flex;gap:6px;align-items:flex-end;border-top:var(--border);padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+#composer textarea{flex:1;resize:none;max-height:100px;min-height:42px;border-radius:20px;padding:10px 14px;font-size:14px;border-width:2px;font-weight:600}
+#composer .circle{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:var(--purple);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:900;border:2px solid #0A0A0A;box-shadow:2px 2px 0 #0A0A0A}
+#composer .iconCircle{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:var(--white);border:2px solid #0A0A0A;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #0A0A0A;font-weight:900}
+.replyBar{background:var(--cyan);padding:8px 12px;display:flex;align-items:center;gap:8px;border-top:var(--border);font-size:12px;font-weight:700}
+.replyBar .txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.replyBar .txt b{color:#0A0A0A;display:block;font-size:11px;font-weight:900}
+.attachMenu{position:absolute;bottom:60px;left:8px;background:var(--white);border:var(--border);border-radius:16px;padding:8px;display:none;flex-direction:column;gap:2px;box-shadow:var(--shadow);z-index:26;min-width:180px}
+.attachMenu.open{display:flex}
+.attachMenu button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:800;text-align:left}
+.attachMenu button:hover{background:var(--yellow)}
+.modal{position:fixed;inset:0;background:rgba(10,10,10,.6);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.modal.open{display:flex}
+.modal .sheet{background:var(--cream);border-radius:24px;padding:20px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;border:var(--border);box-shadow:8px 8px 0 #0A0A0A;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}}
+.modal .sheet h3{margin-bottom:14px;font-size:17px;font-weight:900;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.modal .sheet .actions{display:flex;gap:8px;margin-top:16px}
+.modal .sheet .actions button{flex:1}
+.modal .sheet input,.modal .sheet textarea,.modal .sheet select{margin-bottom:8px}
+.menuItem{display:flex;align-items:center;gap:12px;padding:13px;border-radius:14px;cursor:pointer;font-size:14px;font-weight:800;margin-bottom:4px;border:2px solid #0A0A0A;background:var(--white);box-shadow:2px 2px 0 #0A0A0A}
+.menuItem:hover{background:var(--yellow)}
+.menuItem:active{transform:translate(2px,2px);box-shadow:none}
+.menuItem .em{font-size:12px;width:36px;height:32px;text-align:center;display:flex;align-items:center;justify-content:center;border-radius:10px;border:2px solid #0A0A0A;font-weight:900;background:var(--cyan);color:#0A0A0A;flex-shrink:0}
+.menuItem .sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.menuItem.danger{background:#FEE2E2}
+.menuItem.danger .em{background:var(--red);color:#fff}
+.menuItem .lbl{flex:1;min-width:0}
+.tab-panel{}
+.section{padding:14px}
+.section h4{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;font-weight:900}
+.settingRow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;cursor:pointer;margin-bottom:6px;background:var(--white);border:2px solid #0A0A0A;box-shadow:2px 2px 0 #0A0A0A}
+.settingRow:active{transform:translate(2px,2px);box-shadow:none}
+.settingRow .em{font-size:12px;width:36px;height:32px;text-align:center;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--yellow);border:2px solid #0A0A0A;font-weight:900;flex-shrink:0}
+.settingRow .lbl{flex:1;font-size:13px;font-weight:800;line-height:1.3}
+.settingRow .sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.settingRow .val{color:var(--muted);font-size:12px;font-weight:800}
+.switch{width:48px;height:28px;background:#ccc;border-radius:14px;position:relative;transition:.2s;flex-shrink:0;border:2px solid #0A0A0A}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;border:2px solid #0A0A0A}
+.switch.on{background:var(--green)}
+.switch.on::after{left:22px}
+.proTag{background:linear-gradient(90deg,var(--purple),var(--pink));color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:6px;margin-left:6px}
+.themeGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.themeCard{background:var(--white);border:2px solid #0A0A0A;border-radius:14px;padding:10px;cursor:pointer;box-shadow:2px 2px 0 #0A0A0A}
+.themeCard.active{border-color:var(--purple);border-width:3px;background:var(--yellow)}
+.themeCard.locked{opacity:.55}
+.themePreview{height:52px;border-radius:10px;padding:8px;margin-bottom:8px;border:2px solid #0A0A0A}
+.themePreview .bar{height:8px;width:60%;border-radius:4px;background:rgba(0,0,0,.3);margin-bottom:6px}
+.themePreview .bar.short{width:35%}
+.themeCard .tName{font-size:12px;font-weight:900;display:flex;align-items:center;gap:4px}
+.themeCard .tDesc{font-size:10px;color:var(--muted);font-weight:700;margin-top:2px}
+.fontSizeRow{display:flex;gap:8px;align-items:center;margin-top:8px}
+.fontSizeBtn{padding:10px 16px;border-radius:12px;border:2px solid #0A0A0A;background:var(--white);font-weight:900;font-size:13px;box-shadow:2px 2px 0 #0A0A0A;text-transform:uppercase}
+.fontSizeBtn.active{background:var(--purple);color:#fff}
+.profileView{text-align:center;padding:16px 0}
+.profileView .avatar{margin:0 auto 16px}
+.profileView h2{margin-bottom:4px;font-weight:900;font-size:22px;display:flex;align-items:center;justify-content:center;gap:6px}
+.profileView .username{color:var(--purple);font-size:13px;font-weight:900;margin-bottom:12px}
+.profileView .bio{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.5;padding:10px 14px;background:var(--white);border:2px solid #0A0A0A;border-radius:12px;font-weight:700}
+.profileView .actions{display:flex;flex-direction:column;gap:8px}
+.verifiedBox{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #0A0A0A;border-radius:14px;padding:12px;margin:10px 0;box-shadow:2px 2px 0 #0A0A0A}
+.verifiedBox .title{font-size:13px;font-weight:900;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.verifiedBox .desc{font-size:11px;font-weight:700;color:#92400E;line-height:1.4}
+#storyViewer{position:fixed;inset:0;background:#0A0A0A;z-index:200;display:none;flex-direction:column}
+#storyViewer.open{display:flex}
+#storyViewer .bar{display:flex;gap:3px;padding:12px 12px 4px}
+#storyViewer .bar>div{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden}
+#storyViewer .sfill{height:100%;width:0;background:#fff}
+#storyViewer .head{padding:6px 12px 14px;display:flex;align-items:center;gap:10px;color:#fff}
+#storyViewer .content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#storyViewer .content .text{color:#fff;font-size:26px;text-align:center;font-weight:900;padding:30px;max-width:90%;word-wrap:break-word}
+.storyMedia{max-width:100%;max-height:70vh;border-radius:16px;border:3px solid #fff}
+.storyCap{color:#fff;margin-top:12px;font-weight:800;text-align:center}
+#storyViewer .closeBtn{position:absolute;top:14px;right:14px;color:#fff;background:rgba(0,0,0,.5);width:38px;height:38px;border-radius:50%;font-size:18px;z-index:5;font-weight:900;border:2px solid #fff}
+#snakeCanvas{background:#0A0A0A;border:3px solid #0A0A0A;border-radius:12px;display:block;margin:0 auto;box-shadow:var(--shadow);touch-action:none}
+.snakeControls{display:grid;grid-template-columns:repeat(3,60px);grid-template-rows:repeat(3,60px);gap:6px;justify-content:center;margin:16px auto}
+.snakeControls button{background:var(--white);border:var(--border);border-radius:12px;font-size:20px;font-weight:900;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center}
+.snakeControls button:active{transform:translate(2px,2px);box-shadow:none}
+.snakeControls .empty{visibility:hidden}
+.gameBoard{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:270px;margin:20px auto}
+.gameBoard .cell{aspect-ratio:1;background:var(--white);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:var(--purple);cursor:pointer;border:3px solid #0A0A0A;box-shadow:3px 3px 0 #0A0A0A}
+.gameBoard .cell.win{background:var(--green);color:#fff}
+#liveView{position:absolute;inset:0;background:#000;z-index:150;display:none;flex-direction:column}
+#liveView.open{display:flex}
+#liveView video{flex:1;width:100%;object-fit:cover;background:#000}
+#liveView .liveTop{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;z-index:10;color:#fff;gap:8px}
+#liveView .liveBadge{background:var(--red);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;gap:6px}
+#liveView .liveBadge::before{content:'';width:8px;height:8px;background:#fff;border-radius:50%;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.1)}}
+#liveView .liveStats{background:rgba(0,0,0,.6);color:#fff;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:800;display:flex;gap:10px}
+#liveView .liveBottom{position:absolute;bottom:0;left:0;right:0;padding:12px;background:linear-gradient(to top,rgba(0,0,0,.9),transparent);z-index:10}
+#liveView .liveChat{margin-bottom:8px;max-height:160px;overflow-y:auto;color:#fff;font-size:13px}
+#liveView .liveChat .cm{margin-bottom:4px;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:14px;display:inline-block;font-weight:700}
+#liveView .liveChat .cm b{color:var(--cyan);font-weight:900;margin-right:4px}
+#liveView .liveInputRow{display:flex;gap:8px;align-items:center}
+#liveView .liveInputRow input{background:rgba(255,255,255,.15);border:2px solid #fff;color:#fff;border-radius:24px;padding:10px 16px;font-size:13px}
+#liveView .liveInputRow button{background:var(--purple);color:#fff;width:44px;height:44px;border-radius:50%;border:2px solid #fff;font-size:16px;font-weight:900;flex-shrink:0}
+#liveView .liveControls{position:absolute;top:70px;right:16px;display:flex;flex-direction:column;gap:12px;z-index:10}
+#liveView .liveControls button{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:2px solid #fff;font-size:12px;font-weight:900}
+#liveView .liveControls button.on{background:var(--red)}
+#toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:#0A0A0A;color:#fff;padding:11px 18px;border-radius:14px;font-size:13px;z-index:9999;opacity:0;transition:.25s;pointer-events:none;max-width:85%;font-weight:800;box-shadow:4px 4px 0 rgba(0,0,0,.3);border:2px solid #0A0A0A;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.adminBanner{background:linear-gradient(90deg,var(--pink),var(--purple));color:#fff;padding:10px 14px;text-align:center;font-size:12px;font-weight:900;border-bottom:var(--border);text-transform:uppercase}
+.imgPreview{max-width:100%;max-height:200px;border-radius:12px;border:2px solid #0A0A0A;margin:8px 0}
+.evid{max-width:100%;max-height:120px;border-radius:8px;border:2px solid #0A0A0A;margin:4px 0;cursor:pointer}
+.uploadBox{border:2px dashed #0A0A0A;border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:var(--cream2);font-weight:700;font-size:12px}
+.uploadBox:active{background:var(--yellow)}
+.musicItem{display:flex;gap:10px;padding:10px;border-radius:12px;cursor:pointer;align-items:center;border:2px solid #0A0A0A;background:var(--white);margin-bottom:6px;box-shadow:2px 2px 0 #0A0A0A}
+.musicItem:active{transform:translate(2px,2px);box-shadow:none}
+.musicItem img{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid #0A0A0A}
+.musicItem .info{flex:1;min-width:0}
+.musicItem .info .t{font-weight:900;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.musicItem .info .a{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.channelCard{background:var(--white);padding:14px;border-radius:16px;margin:8px 12px;cursor:pointer;border:2px solid #0A0A0A;box-shadow:2px 2px 0 #0A0A0A}
+.channelCard:active{transform:translate(2px,2px);box-shadow:none}
+.channelCard .name{font-weight:900;margin-bottom:5px;font-size:14px;display:flex;align-items:center;gap:8px}
+.channelCard .desc{color:var(--muted);font-size:12px;line-height:1.4;font-weight:700}
+.channelCard .meta2{color:var(--purple);font-size:11px;margin-top:6px;font-weight:900;text-transform:uppercase}
+.statRow{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--white);border:2px solid #0A0A0A;border-radius:12px;margin-bottom:6px;font-weight:800;font-size:13px}
+.statRow .lbl{flex:1}
+.statRow .val{background:var(--purple);color:#fff;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:900;border:2px solid #0A0A0A}
+
+
+/* ===== IKON ===== */
+.ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:inline-block;vertical-align:-.15em;overflow:visible}
+.em{display:inline-flex;align-items:center;justify-content:center}
+.em>.ic{width:18px;height:18px}
+#nav .tab .em>.ic{width:22px;height:22px}
+.welcome .em{display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.welcome .em .ic{width:44px;height:44px;stroke-width:1.9}
+.header .iconBtn{display:flex;align-items:center;justify-content:center}
+.header .iconBtn>.ic{width:18px;height:18px}
+#composer .ic{width:18px;height:18px}
+.replyBar .ic{width:16px;height:16px}
+.btn .ic{width:16px;height:16px}
+.tag{display:inline-flex;align-items:center;gap:2px}
+.tag .ic{width:11px;height:11px;stroke-width:2.6}
+.avatar.xl .ic{width:44px;height:44px;stroke:#fff;stroke-width:1.9}
+.attachMenu .em{width:30px;height:30px;border-radius:10px;border:2px solid #0A0A0A;background:var(--cyan);color:#0A0A0A;flex-shrink:0}
+.attachMenu .em .ic{width:16px;height:16px}
+.msgWrap .actionsRow button{display:flex;align-items:center;justify-content:center}
+.msgWrap .actionsRow .ic{width:14px;height:14px}
+.snakeControls .ic{width:22px;height:22px}
+#storyViewer .closeBtn{display:flex;align-items:center;justify-content:center}
+#storyViewer .closeBtn .ic{width:18px;height:18px}
+#liveView .liveControls button{display:flex;align-items:center;justify-content:center}
+#liveView .liveControls .ic{width:20px;height:20px}
+#liveView .liveTop .iconBtn{display:flex;align-items:center;justify-content:center}
+#liveView .liveTop .iconBtn .ic{width:18px;height:18px}
+#liveView .liveInputRow button{display:flex;align-items:center;justify-content:center}
+#liveView .liveInputRow .ic{width:18px;height:18px}
+#nav .tab .em{display:flex}
+.fileCard .ic{width:22px;height:22px}
+.fileCard .fileIcon,.fileCard .fileDl{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ===== LENCANA ADMIN (centang hijau) ===== */
+.adm-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#22C55E;color:#fff;border:2px solid #0A0A0A;flex-shrink:0;vertical-align:middle;margin-left:3px}
+.adm-badge .ic{width:9px;height:9px;stroke:#fff;stroke-width:4}
+
+/* ===== PESAN: REAKSI & SOROT HASIL CARI ===== */
+.reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.react{background:var(--white);color:#0A0A0A;border:2px solid #0A0A0A;border-radius:12px;padding:0 6px;font-size:12px;font-weight:800;line-height:18px}
+.react.mine{background:var(--yellow)}
+.msgWrap.hl .bubble{box-shadow:0 0 0 4px var(--yellow)}
+.reactPick{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}
+.reactBtn{height:52px;font-size:26px;border:var(--border);border-radius:14px;background:var(--white);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center}
+.reactBtn.on{background:var(--yellow)}
+.reactBtn:active{transform:translate(2px,2px);box-shadow:none}
+
+/* ===== PERFORMA ===== */
+.listItem,.channelCard{content-visibility:auto;contain-intrinsic-size:auto 72px}
+.modal{backdrop-filter:none}
+
+/* ===== MUSIK MENGAMBANG: panel & pemutar bisa digeser ke mana saja ===== */
+#musicFab{touch-action:none;user-select:none;-webkit-user-select:none}
+#musicFab .ic{width:24px;height:24px}
+#musicFab:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+#musicPlayer{z-index:60;touch-action:none}
+#musicPlayer .ic{width:16px;height:16px}
+.floatWin{position:fixed;z-index:60;width:min(340px,calc(100vw - 16px));max-height:min(500px,72vh);background:var(--cream);border:var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.floatWin.dragging{opacity:.94}
+.fwHead{display:flex;align-items:center;gap:8px;padding:9px 10px 9px 12px;background:var(--purple);color:#fff;border-bottom:var(--border);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0}
+.floatWin.dragging .fwHead{cursor:grabbing}
+.fwGrip{display:flex;opacity:.9}
+.fwGrip .ic{width:18px;height:18px}
+.fwTitle{flex:1;min-width:0;font-weight:900;font-size:13px;letter-spacing:.5px;display:flex;align-items:center;gap:6px;text-transform:uppercase}
+.fwTitle .ic{width:16px;height:16px}
+.fwBtn{width:30px;height:30px;border-radius:10px;background:#fff;color:#0A0A0A;border:2px solid #0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #0A0A0A;flex-shrink:0;cursor:pointer}
+.fwBtn:active{transform:translate(2px,2px);box-shadow:none}
+.fwBtn .ic{width:16px;height:16px}
+.fwBody{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0;flex:1}
+.fwBody .searchBox .sIco{display:flex;color:var(--text)}
+.fwBody .searchBox .ic{width:16px;height:16px}
+.fwRow{display:flex;gap:6px}
+.musicList{overflow-y:auto;min-height:150px;flex:1;-webkit-overflow-scrolling:touch}
+.musicList .emptyBox{padding:16px 8px}
+.musicItem .musicCover{width:48px;height:48px;border-radius:8px;border:2px solid #0A0A0A;background:var(--yellow);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#0A0A0A}
+.musicItem .musicCover .ic{width:22px;height:22px}
+.musicItem .musicPlay{width:30px;height:30px;border-radius:50%;background:var(--yellow);border:2px solid #0A0A0A;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#0A0A0A}
+.musicItem .musicPlay .ic{width:14px;height:14px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18.5 14.2A6.5 6.5 0 0 1 21.5 20"/></symbol><symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/></symbol><symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3"/><path d="M14 2v4M8 10v4M16 18v4"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol><symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol><symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol><symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></symbol><symbol id="i-reply" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></symbol><symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4"/><path d="M4 4h13l-2 4 2 4H4"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol><symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></symbol><symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol><symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol><symbol id="i-poll" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol><symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" stroke="none"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/></symbol><symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/></symbol><symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2M18 5l3 3M15 8l2 2"/></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol><symbol id="i-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="currentColor"/><circle cx="12" cy="12" r="8.5"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></symbol><symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v-4M12 15V7M17 15v-6"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol><symbol id="i-verify" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></symbol><symbol id="i-up" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol><symbol id="i-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol><symbol id="i-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol><symbol id="i-flip" viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol></defs></svg>
+<div id="app">
+  <div id="loading"><div class="spinner"></div><div style="color:var(--muted);font-size:13px;font-weight:800">MEMUAT VEXZANO</div></div>
+
+  <div id="auth" class="hidden">
+    <div class="logo">VZ</div>
+    <h1>VEXZANO Chat</h1>
+    <p class="sub">CHAT . STORY . LIVE . MUSIC . GAME</p>
+    <div class="card">
+      <h2 id="authTitle">Masuk</h2>
+      <div class="field hidden" id="displayNameField"><label>Nama Tampilan</label><input id="inDisplayName" placeholder="cth: Anonim" maxlength="30"/></div>
+      <div class="field"><label>Username</label><input id="inUsername" placeholder="cth: anonim27" autocapitalize="none"/></div>
+      <div class="field"><label>Password (min. 6)</label><input id="inPassword" type="password" placeholder="......"/></div>
+      <button class="btn yellow" id="btnAuth" style="width:100%;margin-top:8px">Masuk</button>
+      <div class="error hidden" id="authError"></div>
+      <div class="toggleAuth"><span id="toggleText">Belum punya akun?</span> <a href="#" id="toggleAuthLink">Daftar</a></div>
+    </div>
+  </div>
+
+  <div id="main" class="hidden">
+    <div class="adminBanner hidden" id="adminBanner">ADMIN MODE — VEXZANO</div>
+    <div class="header">
+      <div class="avatar" id="myAvatar">?</div>
+      <div style="flex:1;min-width:0;cursor:pointer" id="headerInfo">
+        <div class="title" id="pageTitle">-</div>
+        <div class="sub">Online</div>
+      </div>
+      <button class="iconBtn" id="btnLiveQuick" aria-label="Live"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-radio"/></svg></button>
+    </div>
+
+    <div class="tab-panel" id="panel-chats">
+      <div class="searchWrap"><div class="searchBox"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg><input id="searchUsers" placeholder="Cari username..." autocapitalize="none"/></div></div>
+      <div class="chips">
+        <button class="chip active" data-filter="all">Semua</button>
+        <button class="chip" data-filter="private">Pribadi</button>
+        <button class="chip" data-filter="group">Grup</button>
+        <button class="chip" data-filter="channel">Saluran</button>
+      </div>
+      <div id="usersList"></div>
+    </div>
+
+    <div class="tab-panel hidden" id="panel-stories">
+      <div style="padding:14px"><button class="btn cyan block" id="btnAddStory">+ TAMBAH STORY</button></div>
+      <div class="storySection">PEMBARUAN TERKINI (24 JAM)</div>
+      <div id="allStoriesList" style="padding:0 12px"></div>
+    </div>
+
+    <div class="tab-panel hidden" id="panel-channels">
+      <div style="padding:14px;display:flex;gap:8px">
+        <button class="btn pink" style="flex:1" id="btnNewChannel">+ SALURAN</button>
+        <button class="btn green" style="flex:1" id="btnNewGroup">+ GRUP</button>
+      </div>
+      <div id="channelsList"></div>
+      <div class="storySection">GRUP SAYA</div>
+      <div id="groupsList"></div>
+    </div>
+
+    <div class="tab-panel hidden" id="panel-live">
+      <div style="padding:14px;text-align:center">
+        <div style="margin-bottom:10px"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:72px;height:72px;color:var(--red)"><use href="#i-radio"/></svg></div>
+        <h2 style="margin:10px 0;font-size:20px;font-weight:900">LIVE STREAMING</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:20px;font-weight:700">Siarkan momen Anda secara langsung dengan kamera</p>
+        <button class="btn danger block" id="btnStartLive" style="margin-bottom:8px">MULAI LIVE</button>
+        <button class="btn cyan block" id="btnJoinLive">JOIN LIVE ORANG LAIN</button>
+        <div class="storySection" style="text-align:left;padding-left:0">LIVE SEDANG BERLANGSUNG</div>
+        <div id="liveList"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel hidden" id="panel-games">
+      <div style="padding:20px;text-align:center">
+        <div style="margin-bottom:8px"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:72px;height:72px;color:var(--purple)"><use href="#i-gamepad"/></svg></div>
+        <h2 style="margin:8px 0;font-size:20px;font-weight:900">PUSAT GAME</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px;font-weight:700">Pilih game multiplayer</p>
+        <button class="btn block green" id="btnOpenSnake" style="margin-bottom:8px">ULAR MULTIPLAYER</button>
+        <button class="btn block cyan" id="btnFindGame">TIC-TAC-TOE</button>
+        <div id="gameContainer" class="hidden" style="margin-top:16px">
+          <div style="text-align:center;padding:12px;font-size:16px;font-weight:900" id="gameStatus">Menunggu...</div>
+          <div class="gameBoard" id="gameBoard"></div>
+          <button class="btn ghost block" id="btnLeaveGame" style="margin-top:12px">KELUAR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel hidden" id="panel-settings">
+      <div class="section">
+        <h4>Profil</h4>
+        <div class="settingRow" id="setProfile">
+          <div class="avatar" id="setAvatar">?</div>
+          <div class="lbl"><div id="setUsername" style="font-weight:900">-</div><div class="sub" id="setBio">-</div></div>
+          <span style="font-weight:900;color:var(--purple)">EDIT</span>
+        </div>
+        <h4>Akun</h4>
+        <div class="settingRow" id="setChangePass"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-key"/></svg></span><div class="lbl">Ubah kata sandi</div><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--muted)"><use href="#i-chevron"/></svg></div>
+        <div class="settingRow" id="setBlockedList"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ban"/></svg></span><div class="lbl">Daftar Diblokir</div><span class="val" id="valBlocked">0</span></div>
+        <h4>Privasi</h4>
+        <div class="settingRow"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg></span><div class="lbl">Status online</div><div class="switch on" id="switchOnline"></div></div>
+        <div class="settingRow"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-eye"/></svg></span><div class="lbl">Tanda dibaca</div><div class="switch on" id="switchRead"></div></div>
+        <h4>Notifikasi</h4>
+        <div class="settingRow"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bell"/></svg></span><div class="lbl">Notifikasi pesan</div><div class="switch on" id="switchNotif"></div></div>
+        <h4>Tema</h4>
+        <div class="themeGrid" id="themeGrid"></div>
+        <h4>Tampilan</h4>
+        <div class="fontSizeRow">
+          <button class="fontSizeBtn" data-size="small" style="flex:1;font-size:11px">Kecil</button>
+          <button class="fontSizeBtn active" data-size="normal" style="flex:1">Normal</button>
+          <button class="fontSizeBtn" data-size="large" style="flex:1">Besar</button>
+        </div>
+        <div class="settingRow" style="margin-top:12px"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-music"/></svg></span><div class="lbl">Popup musik <span class="proTag">PRO</span></div><div class="switch" id="switchMusicPopup"></div></div>
+        <h4>Data</h4>
+        <div class="settingRow" id="setClearCache"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-refresh"/></svg></span><div class="lbl">Hapus Cache</div></div>
+        <div class="settingRow" id="setExport"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg></span><div class="lbl">Ekspor Data</div></div>
+        <h4>Sesi</h4>
+        <div class="settingRow" id="setLogout" style="background:#FEE2E2"><span class="em" style="background:var(--red);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-logout"/></svg></span><div class="lbl" style="color:var(--red)">Keluar</div></div>
+        <div style="text-align:center;color:var(--muted);font-size:11px;padding:24px 0;font-weight:800">VEXZANO Chat v3.0<br>Made with HTML to APK</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="musicFab" role="button" tabindex="0" aria-label="Musik" title="Musik"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-music"/></svg></div>
+  <div id="musicPlayer">
+    <div class="dragHandle"></div>
+    <div class="cover" id="mpCover"></div>
+    <div class="info"><div class="songTitle" id="mpTitle">-</div><div class="songArtist" id="mpArtist">-</div></div>
+    <button id="mpPlayPause" aria-label="Putar atau jeda"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
+    <button id="mpClose" aria-label="Tutup pemutar"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="progressBar"><div class="fill" id="mpFill"></div></div>
+  </div>
+  <div id="musicPanel" class="floatWin hidden" role="dialog" aria-label="Musik">
+    <div class="fwHead" id="musicPanelHead" title="Geser panel">
+      <span class="fwGrip"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-grip"/></svg></span>
+      <span class="fwTitle"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-music"/></svg> Musik</span>
+      <button class="fwBtn" id="musicPanelClose" aria-label="Tutup panel"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="fwBody">
+      <div class="searchBox"><span class="sIco"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg></span><input id="musicQ" placeholder="Cari lagu atau artis..." autocapitalize="none" enterkeyhint="search"/></div>
+      <div class="fwRow"><button class="btn small cyan" id="musicGo" style="flex:1">CARI</button><button class="btn small" id="musicTop" style="flex:1">TRENDING</button></div>
+      <div id="musicList" class="musicList"><div class="emptyBox">Cari lagu untuk diputar. Pemutar tetap jalan saat kamu membuka menu lain.</div></div>
+    </div>
+  </div>
+  <div id="nav" class="hidden">
+    <button class="tab active" data-tab="chats"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg></span>Home</button>
+    <button class="tab" data-tab="stories"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-clock"/></svg></span>Story</button>
+    <button class="tab" data-tab="live"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-radio"/></svg></span>Live</button>
+    <button class="tab" data-tab="games"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-gamepad"/></svg></span>Game</button>
+    <button class="tab" data-tab="channels"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></span>Saluran</button>
+  </div>
+
+  <div id="chatView">
+    <div class="header dark">
+      <button class="iconBtn" id="btnBack" aria-label="Kembali"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <div class="avatar sm" id="chatAvatar">?</div>
+      <div style="flex:1;min-width:0">
+        <div class="title" id="chatTitle">Chat</div>
+        <div class="sub" id="chatStatus"></div>
+      </div>
+      <button class="iconBtn" id="btnChatSearch" aria-label="Cari pesan"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg></button><button class="iconBtn" id="btnChatMenu" aria-label="Menu chat"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-more"/></svg></button>
+    </div>
+    <div id="messages"></div>
+    <div class="replyBar hidden" id="replyBar">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><use href="#i-reply"/></svg>
+      <div class="txt" id="replyText"></div>
+      <button id="btnCancelReply" aria-label="Batal balas"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="attachMenu" id="attachMenu">
+      <button data-att="gallery"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-image"/></svg></span>Galeri / File</button>
+      <button data-att="camera"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-camera"/></svg></span>Kamera</button>
+      <button data-att="voice"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mic"/></svg></span>Voice Note</button>
+      <button data-att="location"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg></span>Lokasi</button>
+      <button data-att="contact"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-user"/></svg></span>Kontak</button>
+      <button data-att="poll"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-poll"/></svg></span>Polling</button>
+    </div>
+    <div id="composer">
+      <button class="iconCircle" id="btnAttach" aria-label="Lampiran"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus"/></svg></button>
+      <textarea id="msgInput" rows="1" placeholder="Ketik pesan..."></textarea>
+      <button class="circle" id="btnSend" aria-label="Kirim"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-send"/></svg></button>
+    </div>
+  </div>
+
+  <div id="liveView">
+    <video id="liveVideo" autoplay playsinline muted></video>
+    <div class="liveTop">
+      <div class="liveBadge">LIVE</div>
+      <div class="liveStats"><span id="liveViewers">0 penonton</span><span id="liveTimer">00:00</span></div>
+      <button class="iconBtn" id="btnCloseLive" aria-label="Tutup live" style="background:rgba(0,0,0,.7);color:#fff;border-color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="liveControls">
+      <button id="btnFlipCam" title="Ganti kamera"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flip"/></svg></button>
+      <button id="btnMuteMic" title="Mikrofon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mic"/></svg></button>
+      <button id="btnMuteCam" title="Kamera"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-camera"/></svg></button>
+    </div>
+    <div class="liveBottom">
+      <div class="liveChat" id="liveChat"></div>
+      <div class="liveInputRow">
+        <input id="liveInput" placeholder="Komentar..."/>
+        <button id="btnSendLive" aria-label="Kirim komentar"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-send"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="storyViewer">
+    <div class="bar" id="storyBar"></div>
+    <div class="head"><div class="avatar sm" id="storyAvatar">?</div><div style="font-weight:800" id="storyName">-</div></div>
+    <button class="closeBtn" id="btnCloseStory" aria-label="Tutup story"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="content" id="storyContent"></div>
+  </div>
+
+  <div id="snakeModal" class="modal">
+    <div class="sheet" style="max-width:480px">
+      <h3>ULAR MULTIPLAYER</h3>
+      <div id="snakeMenu">
+        <button class="btn green block" id="btnPlaySnakeSolo" style="margin-bottom:8px">MAIN SENDIRI</button>
+        <button class="btn cyan block" id="btnFindSnakeMatch">CARI LAWAN ONLINE</button>
+      </div>
+      <div id="snakeGameArea" class="hidden">
+        <div style="text-align:center;font-weight:900;font-size:14px;margin-bottom:8px" id="snakeScore">Skor: 0</div>
+        <canvas id="snakeCanvas" width="300" height="300"></canvas>
+        <div class="snakeControls">
+          <button class="empty"></button><button data-act="snakeDir" data-id="up"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-up"/></svg></button><button class="empty"></button>
+          <button data-act="snakeDir" data-id="left"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-left"/></svg></button><button class="empty"></button><button data-act="snakeDir" data-id="right"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-right"/></svg></button>
+          <button class="empty"></button><button data-act="snakeDir" data-id="down"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-down"/></svg></button><button class="empty"></button>
+        </div>
+        <button class="btn danger block" id="btnQuitSnake" style="margin-top:8px">KELUAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal"><div class="sheet" id="modalSheet"></div></div>
+  <audio id="audioEl" loop style="display:none"></audio>
+  <div id="toast"></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, serverTimestamp, limit, limitToLast, startAfter, endBefore, startAt, endAt, getCountFromServer, increment, Timestamp, deleteField } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC4CQhR20UMSsxijG91_iedTdqpBt0XIZc",
+  authDomain: "chat-global-dc6f0.firebaseapp.com",
+  projectId: "chat-global-dc6f0",
+  storageBucket: "chat-global-dc6f0.firebasestorage.app",
+  messagingSenderId: "241832808579",
+  appId: "1:241832808579:web:85e872ce7498176a6bcbb6"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_USERNAME = 'hasbi';
+// Domain email internal untuk login. JANGAN diubah: akun yang sudah terdaftar login memakai domain ini.
+const AUTH_DOMAIN = 'xyzora.app';
+const PAGE = 20, MSG_PAGE = 30, STORY_HOURS = 24;
+const MAX_FILE = 25 * 1024 * 1024;
+const BIG = 8.64e15;
+const DEF_SET = { theme: 'neobrutalism', font: 'normal', notif: true, read: true, online: true, musicPopup: true };
+function liveFresh() {
+  return { stream: null, active: false, roomId: null, startTime: null, micOn: true, camOn: true, facing: 'user', timer: null, joined: false, unsubs: [] };
+}
+const S = {
+  user: null, userData: null, isAdmin: false,
+  currentChat: null, currentChatType: null,
+  unsubMsgs: null, msgMap: new Map(), msgOldestSnap: null, msgHasMore: false, msgLoading: false, msgSeq: 0,
+  unsubStories: null, allStories: [], storyList: [], storyTimer: null,
+  unsubGroups: null, allGroups: [],
+  unsubLive: null, allLives: [], live: liveFresh(),
+  unsubGame: null, gameRoomId: null, gameSymbol: null,
+  userCache: new Map(), replyTo: null, rec: null,
+  blocked: JSON.parse(localStorage.getItem('xz_blocked') || '[]'),
+  settings: { ...DEF_SET, ...JSON.parse(localStorage.getItem('xz_settings') || '{}') },
+  music: { playing: false, current: null },
+  inviteDone: false, homeTerm: '', unsubPeer: null
+};
+const SN = { st: null, timer: null, size: 20, cs: 15 };
+
+/* ===== HELPER ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+const initOf = n => ([...String(n || '?')][0] || '?').toUpperCase();
+const tsMs = t => (t && typeof t.toMillis === 'function') ? t.toMillis() : BIG;
+const pad = n => String(n).padStart(2, '0');
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const timeStr = t => { const ms = tsMs(t); if (ms === BIG) return ''; const d = new Date(ms); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const dateStr = t => { const ms = tsMs(t); if (ms === BIG) return ''; const d = new Date(ms); return d.toDateString() === new Date().toDateString() ? timeStr(t) : d.getDate() + ' ' + MONTHS[d.getMonth()]; };
+const fmtBytes = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB';
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const toast = m => { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500); };
+const openModal = h => { $('modalSheet').innerHTML = h; $('modal').classList.add('open'); };
+const closeModal = () => $('modal').classList.remove('open');
+const spinnerHTML = '<div class="loadMore"><div class="spinner sm"></div></div>';
+const avHTML = (u, cls = '') => u.photo
+  ? `<div class="avatar ${cls}" style="background-image:url('${esc(u.photo)}')"></div>`
+  : `<div class="avatar ${cls}">${esc(initOf(u.displayName || u.username))}</div>`;
+function setAvatar(el, photo, text) { el.style.backgroundImage = photo ? `url("${photo}")` : ''; el.textContent = photo ? '' : (text || '?'); }
+/* ===== LENCANA ADMIN, STATUS, REAKSI (helper) ===== */
+const svgIcon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const isStaff = u => !!u && (u.isAdmin === true || u.username === ADMIN_USERNAME);
+// Admin: centang hijau. Terverifikasi: lencana V oranye (keduanya bisa tampil bersamaan).
+const badgeHTML = u => (isStaff(u) ? `<span class="adm-badge" title="Admin">${svgIcon('check')}</span>` : '')
+  + (u && u.verified ? '<span class="verify-badge" title="Terverifikasi">V</span>' : '');
+const REACTS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+function lastSeenText(ts) {
+  const ms = tsMs(ts);
+  if (ms === BIG) return 'Offline';
+  const d = new Date(ms);
+  const hari = d.toDateString() === new Date().toDateString() ? 'hari ini' : d.getDate() + ' ' + MONTHS[d.getMonth()];
+  return 'Terakhir dilihat ' + hari + ' ' + timeStr(ts);
+}
+function reactsHTML(m) {
+  const r = m.reactions || {}, cnt = new Map();
+  Object.values(r).forEach(e => cnt.set(e, (cnt.get(e) || 0) + 1));
+  if (!cnt.size) return '';
+  const mineE = r[S.user.uid];
+  return '<div class="reacts">' + [...cnt].map(([e, n]) => `<span class="react${e === mineE ? ' mine' : ''}">${esc(e)}${n > 1 ? ' ' + n : ''}</span>`).join('') + '</div>';
+}
+function stopPeerWatch() { if (S.unsubPeer) { S.unsubPeer(); S.unsubPeer = null; } }
+function startPeerWatch(uid) { // status online / terakhir dilihat secara realtime di header chat pribadi
+  stopPeerWatch();
+  S.unsubPeer = onSnapshot(doc(db, 'users', uid), s => {
+    if (!s.exists() || S.currentChat !== uid) return;
+    const u = { uid, ...s.data() };
+    S.userCache.set(uid, u);
+    $('chatStatus').textContent = u.online ? 'Online' : lastSeenText(u.lastSeen);
+  }, () => {});
+}
+function stopListeners() {
+  [S.unsubStories, S.unsubGroups, S.unsubLive, S.unsubPeer].forEach(fn => { if (typeof fn === 'function') fn(); });
+  S.unsubStories = S.unsubGroups = S.unsubLive = S.unsubPeer = null;
+  S.allStories = []; S.allGroups = []; S.allLives = [];
+}
+function persist() { localStorage.setItem('xz_settings', JSON.stringify(S.settings)); localStorage.setItem('xz_blocked', JSON.stringify(S.blocked)); }
+
+/* ===== GAMBAR (kompres di sisi klien agar dokumen tetap kecil) ===== */
+function loadImg(file) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('gambar tidak valid')); };
+    im.src = u;
+  });
+}
+async function imageToBlob(file, maxSide, quality) {
+  const im = await loadImg(file);
+  const w0 = im.naturalWidth || 1, h0 = im.naturalHeight || 1;
+  const s = Math.min(1, maxSide / Math.max(w0, h0));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w0 * s));
+  c.height = Math.max(1, Math.round(h0 * s));
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(im, 0, 0, c.width, c.height);
+  return new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('blob'))), 'image/jpeg', quality));
+}
+const blobToDataURL = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(b); });
+const makeThumb = async (file, maxSide, quality) => blobToDataURL(await imageToBlob(file, maxSide, quality));
+function pickImage(cb) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = () => { const f = inp.files[0]; if (f) Promise.resolve().then(() => cb(f)).catch(() => toast('Gagal memproses gambar')); };
+  inp.click();
+}
+
+/* ===== AKSI (event delegation: tombol dengan data-act) ===== */
+const ACT = {};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || !ACT[el.dataset.act]) return;
+  e.preventDefault();
+  if (el.classList.contains('menuItem')) closeModal();
+  ACT[el.dataset.act](el.dataset.id, el);
+});
+document.addEventListener('contextmenu', e => {
+  const el = e.target.closest('[data-ctx]');
+  if (!el) return;
+  e.preventDefault();
+  ACT.userOpts(el.dataset.ctx);
+});
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+ACT.close = () => closeModal();
+
+/* ===== PAGINASI: muat 20 data per halaman, muat berikutnya saat di-scroll ===== */
+const PAGERS = {};
+function makePager(id, o) {
+  const P = { items: [], cursor: null, done: false, busy: false, seq: 0, loadedAt: 0, io: null };
+  PAGERS[id] = P;
+  P.reset = () => { P.items = []; P.cursor = null; P.done = false; P.busy = false; P.seq++; P.loadedAt = 0; P.more(); };
+  P.more = async () => {
+    if (P.busy || P.done) return;
+    P.busy = true;
+    const seq = P.seq;
+    P.draw();
+    try {
+      const snap = await getDocs(o.query(P.cursor));
+      if (seq !== P.seq) return;
+      if (snap.docs.length) P.cursor = snap.docs[snap.docs.length - 1];
+      P.done = snap.docs.length < PAGE;
+      snap.docs.forEach(d => P.items.push(o.map(d)));
+      P.loadedAt = Date.now();
+    } catch (e) {
+      if (seq === P.seq) { P.done = true; toast('Gagal memuat daftar'); }
+    } finally {
+      if (seq === P.seq) { P.busy = false; P.draw(); }
+    }
+  };
+  P.draw = () => {
+    const box = $(o.box);
+    if (!box || (o.skip && o.skip())) return; // saat mencari, hasil pencarian tidak ditimpa
+    const shown = P.items.filter(o.keep || (() => true));
+    let html = shown.map(o.row).join('');
+    if (!shown.length && !P.busy && P.done) html = o.empty();
+    if (!P.done) html += `<div class="loadMore" id="more-${id}"><button class="btn small ghost" data-act="pagerMore" data-id="${id}">${P.busy ? 'MEMUAT...' : 'MUAT LAGI'}</button></div>`;
+    box.innerHTML = html;
+    if (P.io) P.io.disconnect();
+    const sent = $('more-' + id);
+    if (sent && 'IntersectionObserver' in window) {
+      P.io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) P.more(); }, { root: $('main'), rootMargin: '160px' });
+      P.io.observe(sent);
+    }
+  };
+  return P;
+}
+ACT.pagerMore = id => PAGERS[id] && PAGERS[id].more();
+
+/* ===== LOGIN / DAFTAR ===== */
+let isRegister = false;
+$('toggleAuthLink').onclick = e => {
+  e.preventDefault(); isRegister = !isRegister;
+  $('authTitle').textContent = isRegister ? 'Daftar Akun Baru' : 'Masuk';
+  $('btnAuth').textContent = isRegister ? 'Daftar' : 'Masuk';
+  $('toggleText').textContent = isRegister ? 'Sudah punya akun?' : 'Belum punya akun?';
+  $('toggleAuthLink').textContent = isRegister ? 'Masuk' : 'Daftar';
+  $('displayNameField').classList.toggle('hidden', !isRegister);
+  $('authError').classList.add('hidden');
+};
+const authFail = m => { const e = $('authError'); e.textContent = m; e.classList.remove('hidden'); };
+$('btnAuth').onclick = async () => {
+  $('authError').classList.add('hidden');
+  const username = $('inUsername').value.trim().toLowerCase();
+  const password = $('inPassword').value;
+  const displayName = $('inDisplayName').value.trim();
+  if (!/^[a-z0-9_]{3,20}$/.test(username)) return authFail('Username 3-20 karakter (huruf kecil, angka, _)');
+  if (password.length < 6) return authFail('Password min 6 karakter');
+  if (isRegister && displayName.length < 2) return authFail('Nama min 2 karakter');
+  const email = username + '@' + AUTH_DOMAIN;
+  const btn = $('btnAuth');
+  try {
+    btn.disabled = true; btn.textContent = '...';
+    if (isRegister) {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        uid: cred.user.uid, username, displayName: displayName || username, bio: 'Hai, saya di VEXZANO!', photo: '',
+        createdAt: serverTimestamp(), online: true, verified: false, isAdmin: username === ADMIN_USERNAME, verifyRequest: null
+      });
+      toast('Akun dibuat');
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+    }
+  } catch (e) {
+    const c = e.code || '';
+    if (c === 'auth/email-already-in-use') authFail('Username sudah dipakai');
+    else if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-login-credentials'].includes(c)) authFail('Username/password salah');
+    else if (c === 'auth/too-many-requests') authFail('Terlalu banyak percobaan, coba lagi nanti');
+    else authFail('Error: ' + (c || e.message));
+  } finally {
+    btn.disabled = false; btn.textContent = isRegister ? 'Daftar' : 'Masuk';
+  }
+};
+
+onAuthStateChanged(auth, async user => {
+  $('loading').classList.add('hidden');
+  if (!user) {
+    S.user = null; S.userData = null; S.isAdmin = false;
+    $('auth').classList.remove('hidden');
+    $('main').classList.add('hidden'); $('nav').classList.add('hidden');
+    $('adminBanner').classList.add('hidden'); $('musicFab').classList.remove('show');
+    stopListeners(); musicStop(); $('musicPanel').classList.add('hidden');
+    return;
+  }
+  const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+  S.user = user;
+  S.userData = snap && snap.exists() ? snap.data() : { username: (user.email || 'user').split('@')[0], displayName: '', bio: '', photo: '' };
+  S.userData.displayName = S.userData.displayName || S.userData.username;
+  S.isAdmin = S.userData.isAdmin === true || S.userData.username === ADMIN_USERNAME;
+  $('auth').classList.add('hidden');
+  $('main').classList.remove('hidden'); $('nav').classList.remove('hidden');
+  $('adminBanner').classList.toggle('hidden', !S.isAdmin);
+  $('musicFab').classList.add('show');
+  placeFloat($('musicFab'), 'fab', () => ({ l: innerWidth - 76, t: innerHeight - 152 }));
+  initApp();
+});
+
+function initApp() {
+  updateMyProfileUI(); renderThemeGrid(); applySettings();
+  setPresence(true);
+  HOME.reset();
+  loadGroups();
+  handleInvites();
+}
+const setPresence = on => { // saat tidak aktif, simpan waktu terakhir dilihat
+  if (!S.user) return;
+  const data = on && S.settings.online ? { online: true } : { online: false, lastSeen: serverTimestamp() };
+  updateDoc(doc(db, 'users', S.user.uid), data).catch(() => {});
+};
+document.addEventListener('visibilitychange', () => setPresence(document.visibilityState === 'visible'));
+
+/* ===== NAVIGASI TAB ===== */
+function showTab(n) {
+  document.querySelectorAll('#nav .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === n));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  $('panel-' + n).classList.remove('hidden');
+  $('pageTitle').textContent = { chats: S.userData.username, stories: 'Story', live: 'Live', games: 'Game', channels: 'Saluran', settings: 'Pengaturan' }[n] || 'VEXZANO';
+  if (n === 'chats' && !S.homeTerm && Date.now() - HOME.loadedAt > 60000) HOME.reset();
+  if (n === 'stories' && !S.unsubStories) { $('allStoriesList').innerHTML = spinnerHTML; loadStories(); }
+  if (n === 'channels') { renderGroups(); if (Date.now() - CHANNELS.loadedAt > 60000) CHANNELS.reset(); }
+  if (n === 'live' && !S.unsubLive) loadLives();
+  if (n === 'settings') renderThemeGrid();
+}
+document.querySelectorAll('#nav .tab').forEach(t => t.onclick = () => showTab(t.dataset.tab));
+ACT.goSettings = () => showTab('settings');
+/* ===== BARIS DAFTAR ===== */
+function userRow(u) {
+  const name = u.displayName || u.username;
+  return `<div class="listItem" data-act="openChat" data-id="${esc(u.uid)}" data-ctx="${esc(u.uid)}">${avHTML(u, u.online ? 'badge' : '')}<div class="info"><div class="name">${esc(name)} ${badgeHTML(u)}</div><div class="last">${esc(u.bio || 'Ketuk untuk chat')}</div></div><div class="time">${dateStr(u.createdAt)}</div></div>`;
+}
+function channelRow(c) {
+  return `<div class="channelCard" data-act="openChannel" data-id="${esc(c.id)}"><div class="name">${c.photo ? `<div class="avatar sm" style="background-image:url('${esc(c.photo)}')"></div>` : '<span class="tag"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></span>'} ${esc(c.name)}</div><div class="desc">${esc(c.desc || 'Tanpa deskripsi')}</div><div class="meta2">@${esc(c.ownerName || '')} · ${(c.members || []).length} anggota</div></div>`;
+}
+function groupRow(g) {
+  return `<div class="channelCard" data-act="openGroup" data-id="${esc(g.id)}"><div class="name">${g.photo ? `<div class="avatar sm" style="background-image:url('${esc(g.photo)}')"></div>` : '<span class="tag"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></span>'} ${esc(g.name)}</div><div class="desc">${(g.members || []).length} anggota</div></div>`;
+}
+
+/* ===== HOME: daftar pengguna (paginasi by username) ===== */
+const HOME = makePager('home', {
+  box: 'usersList',
+  skip: () => !!S.homeTerm,
+  query: after => query(collection(db, 'users'), orderBy('username'), ...(after ? [startAfter(after)] : []), limit(PAGE)),
+  map: d => ({ uid: d.id, ...d.data() }),
+  keep: u => u.uid !== S.user.uid && !S.blocked.includes(u.uid),
+  row: userRow,
+  empty: () => `<div class="welcome"><div class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg></div><h3>Belum ada pengguna lain</h3><p>Bagikan username kamu:</p><p><b>@${esc(S.userData.username)}</b></p></div>`
+});
+const CHANNELS = makePager('ch', {
+  box: 'channelsList',
+  query: after => query(collection(db, 'channels'), orderBy('createdAt', 'desc'), ...(after ? [startAfter(after)] : []), limit(PAGE)),
+  map: d => ({ id: d.id, ...d.data() }),
+  row: channelRow,
+  empty: () => '<div class="welcome"><div class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></div><h3>BELUM ADA SALURAN</h3></div>'
+});
+const refreshHome = () => { if (!S.homeTerm) HOME.draw(); };
+
+async function searchUsers(term) {
+  if (!term) return [];
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), orderBy('username'), startAt(term), endAt(term + '\uf8ff'), limit(30)));
+    return snap.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => u.uid !== S.user.uid);
+  } catch (e) { return []; }
+}
+async function homeSearch(term) {
+  S.homeTerm = term;
+  if (HOME.io) HOME.io.disconnect();
+  if (!term) { HOME.draw(); if (!HOME.loadedAt && !HOME.busy) HOME.more(); return; }
+  $('usersList').innerHTML = spinnerHTML;
+  const res = (await searchUsers(term)).filter(u => !S.blocked.includes(u.uid));
+  if (S.homeTerm !== term) return;
+  $('usersList').innerHTML = res.length ? res.map(userRow).join('') : '<div class="emptyBox">Tidak ditemukan</div>';
+}
+$('searchUsers').addEventListener('input', debounce(e => homeSearch(e.target.value.trim().toLowerCase()), 300));
+
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.toggle('active', x === c));
+  const f = c.dataset.filter;
+  if (f === 'group') {
+    if (HOME.io) HOME.io.disconnect();
+    S.homeTerm = '';
+    $('usersList').innerHTML = S.allGroups.length ? S.allGroups.map(groupRow).join('') : '<div class="emptyBox">Kamu belum punya grup</div>';
+  } else if (f === 'channel') {
+    showTab('channels');
+  } else {
+    S.homeTerm = ''; $('searchUsers').value = '';
+    HOME.draw();
+    if (!HOME.loadedAt) HOME.more();
+  }
+});
+
+/* ===== DATA PENGGUNA & DOKUMEN (dengan cache kecil) ===== */
+async function getUser(uid) {
+  if (S.userCache.has(uid)) return S.userCache.get(uid);
+  const s = await getDoc(doc(db, 'users', uid)).catch(() => null);
+  if (!s || !s.exists()) return null;
+  const u = { uid, ...s.data() };
+  S.userCache.set(uid, u);
+  return u;
+}
+async function getDocData(kind, id) {
+  const s = await getDoc(doc(db, kind, id)).catch(() => null);
+  return s && s.exists() ? { id: s.id, ...s.data() } : null;
+}
+function updateMyProfileUI() {
+  const name = S.userData.displayName || S.userData.username;
+  setAvatar($('myAvatar'), S.userData.photo, initOf(name));
+  setAvatar($('setAvatar'), S.userData.photo, initOf(name));
+  $('setUsername').textContent = name;
+  $('setBio').textContent = '@' + S.userData.username + (S.userData.verified ? ' · VERIFIED' : '');
+  $('pageTitle').textContent = S.userData.username;
+}
+
+/* ===== PROFIL ===== */
+async function viewProfile(uid) {
+  const u = await getUser(uid);
+  if (!u) return toast('Pengguna tidak ditemukan');
+  const name = u.displayName || u.username, isMe = uid === S.user.uid;
+  openModal(`<div class="profileView">
+    ${u.photo ? `<div class="avatar xl" style="background-image:url('${esc(u.photo)}');margin:0 auto 16px"></div>` : `<div class="avatar xl" style="margin:0 auto 16px">${esc(initOf(name))}</div>`}
+    <h2>${esc(name)} ${badgeHTML(u)}</h2>
+    <div class="username">@${esc(u.username)}</div>
+    <div class="bio">${esc(u.bio || 'Belum ada bio')}</div>
+    <div class="actions">
+      ${isMe ? '<button class="btn cyan block" data-act="editProfile">EDIT PROFIL</button>'
+        : `<button class="btn block" data-act="openChat" data-id="${esc(uid)}">KIRIM PESAN</button><button class="btn ghost block" data-act="reportUser" data-id="${esc(uid)}">LAPORKAN</button>`}
+    </div>
+  </div>
+  <div class="actions"><button class="btn ghost" data-act="close" style="flex:1">Tutup</button></div>`);
+}
+ACT.viewProfile = uid => viewProfile(uid);
+
+function editProfile() {
+  const u = S.userData, name = u.displayName || u.username;
+  let photo = null; // null = foto tidak berubah
+  openModal(`<h3>EDIT PROFIL</h3>
+    <div style="text-align:center">${u.photo ? `<img src="${esc(u.photo)}" class="bigAv" alt=""/>` : `<div class="avatar xl" style="margin:0 auto">${esc(initOf(name))}</div>`}</div>
+    <button class="btn cyan block" id="epPick" style="margin:12px 0">UBAH FOTO</button>
+    <input type="file" id="epFile" accept="image/*" class="hidden"/>
+    <input id="epName" value="${esc(name)}" maxlength="30" placeholder="Nama"/>
+    <textarea id="epBio" rows="3" maxlength="200" placeholder="Bio">${esc(u.bio || '')}</textarea>
+    ${u.verified
+      ? '<div class="verifiedBox"><div class="title">VERIFIED</div><div class="desc">Akun terverifikasi</div></div>'
+      : '<div class="verifiedBox"><div class="title">VERIFIED</div><div class="desc">Belum terverifikasi.</div><textarea id="epVReason" rows="2" placeholder="Alasan (opsional)" style="margin-top:8px;font-size:12px"></textarea><button class="btn small block" id="epVReq" style="margin-top:8px">AJUKAN</button></div>'}
+    <div class="actions"><button class="btn ghost" style="flex:1" data-act="close">Batal</button><button class="btn pink" style="flex:1" id="epSave">SIMPAN</button></div>`);
+  $('epPick').onclick = () => $('epFile').click();
+  $('epFile').onchange = async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try { toast('Mengunggah foto...'); photo = await makePhoto(f, 160, 'avatars'); toast('Foto siap disimpan'); }
+    catch (err) { toast('Gambar tidak valid'); }
+  };
+  if ($('epVReq')) $('epVReq').onclick = async () => {
+    await updateDoc(doc(db, 'users', S.user.uid), { verifyRequest: { reason: $('epVReason').value.trim(), at: new Date().toISOString(), status: 'pending' } }).catch(() => {});
+    toast('Pengajuan terkirim'); closeModal();
+  };
+  $('epSave').onclick = async () => {
+    const displayName = $('epName').value.trim(), bio = $('epBio').value.trim();
+    if (displayName.length < 2) return toast('Nama min 2 karakter');
+    const data = { displayName, bio };
+    if (photo !== null) data.photo = photo;
+    try { await updateDoc(doc(db, 'users', S.user.uid), data); }
+    catch (err) { return toast('Gagal menyimpan'); }
+    Object.assign(S.userData, data);
+    S.userCache.delete(S.user.uid);
+    updateMyProfileUI(); closeModal(); toast('Profil diperbarui');
+  };
+}
+ACT.editProfile = () => editProfile();
+
+/* ===== PENGATURAN ===== */
+const THEMES = [
+  { id: 'neobrutalism', name: 'Neobrutalism', desc: 'Bawaan', free: true, preview: 'linear-gradient(135deg,#FFD93D,#FFF8DC)' },
+  { id: 'glass', name: 'Liquid Glass', desc: 'Pro', free: false, preview: 'linear-gradient(135deg,#E0E7FF,#C4B5FD)' },
+  { id: 'minimal', name: 'Minimal', desc: 'Pro', free: false, preview: 'linear-gradient(135deg,#F3F4F6,#E5E7EB)' },
+  { id: 'dark', name: 'Gelap', desc: 'Pro', free: false, preview: 'linear-gradient(135deg,#1a1a1a,#333)' },
+  { id: 'mint', name: 'Mint Pro', desc: 'Pro', free: false, preview: 'linear-gradient(135deg,#A7F3D0,#6EE7B7)' },
+  { id: 'sakura', name: 'Sakura Pro', desc: 'Pro', free: false, preview: 'linear-gradient(135deg,#FBCFE8,#F9A8D4)' },
+  { id: 'samudra', name: 'Samudra Pro', desc: 'Pro', free: false, preview: 'linear-gradient(135deg,#BAE6FD,#7DD3FC)' }
+];
+function renderThemeGrid() {
+  $('themeGrid').innerHTML = THEMES.map(t => `<div class="themeCard ${t.free ? '' : 'locked'}" data-theme="${t.id}"><div class="themePreview" style="background:${t.preview}"><div class="bar"></div><div class="bar short"></div></div><div class="tName">${t.name}${t.free ? '' : '<span class="proTag">PRO</span>'}</div><div class="tDesc">${t.desc}</div></div>`).join('');
+  $('themeGrid').querySelectorAll('.themeCard').forEach(c => c.onclick = () => {
+    const t = THEMES.find(x => x.id === c.dataset.theme);
+    if (!t.free) return toast('Tema Pro');
+    S.settings.theme = t.id; applySettings();
+  });
+  applySettings();
+}
+function applySettings() {
+  const t = S.settings.theme === 'neobrutalism' ? null : S.settings.theme;
+  if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+  document.body.style.fontSize = { small: '13px', normal: '15px', large: '17px' }[S.settings.font] || '15px';
+  $('switchOnline').classList.toggle('on', S.settings.online);
+  $('switchRead').classList.toggle('on', S.settings.read);
+  $('switchNotif').classList.toggle('on', S.settings.notif);
+  $('switchMusicPopup').classList.toggle('on', S.settings.musicPopup);
+  document.querySelectorAll('.fontSizeBtn').forEach(b => b.classList.toggle('active', b.dataset.size === S.settings.font));
+  document.querySelectorAll('.themeCard').forEach(c => c.classList.toggle('active', c.dataset.theme === S.settings.theme));
+  $('valBlocked').textContent = S.blocked.length;
+  persist();
+}
+$('setProfile').onclick = () => editProfile();
+$('switchOnline').onclick = () => { S.settings.online = !S.settings.online; applySettings(); setPresence(true); };
+$('switchRead').onclick = () => { S.settings.read = !S.settings.read; applySettings(); };
+$('switchNotif').onclick = () => { S.settings.notif = !S.settings.notif; applySettings(); };
+$('switchMusicPopup').onclick = () => { S.settings.musicPopup = !S.settings.musicPopup; applySettings(); if (!S.settings.musicPopup) musicStop(); };
+document.querySelectorAll('.fontSizeBtn').forEach(b => b.onclick = () => { S.settings.font = b.dataset.size; applySettings(); });
+$('setClearCache').onclick = () => { if (!confirm('Hapus cache lokal?')) return; localStorage.removeItem('xz_seen_stories'); toast('Cache dihapus'); };
+$('setExport').onclick = () => {
+  const blob = new Blob([JSON.stringify({ user: S.userData, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'vexzano-data.json'; a.click();
+  toast('Diekspor');
+};
+$('setChangePass').onclick = () => {
+  openModal(`<h3>UBAH PASSWORD</h3><input type="password" id="newPass" placeholder="Password baru"/><div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn" id="doChangePass">Simpan</button></div>`);
+  $('doChangePass').onclick = async () => {
+    const np = $('newPass').value;
+    if (np.length < 6) return toast('Min 6 karakter');
+    try { await updatePassword(S.user, np); closeModal(); toast('Password diubah'); }
+    catch (e) { toast('Gagal: login ulang lalu coba lagi'); }
+  };
+};
+$('setBlockedList').onclick = () => openBlockedList();
+$('setLogout').onclick = () => logout();
+async function logout() {
+  if (!confirm('Keluar dari akun?')) return;
+  setPresence(false);
+  await signOut(auth);
+}
+ACT.logout = () => logout();
+
+/* ===== MENU AVATAR ===== */
+function showAvatarMenu() {
+  const name = S.userData.displayName || S.userData.username;
+  openModal(`<div style="text-align:center;margin-bottom:14px">
+      ${S.userData.photo ? `<div class="avatar xl" style="background-image:url('${esc(S.userData.photo)}');margin:0 auto 12px"></div>` : `<div class="avatar xl" style="margin:0 auto 12px">${esc(initOf(name))}</div>`}
+      <div style="font-weight:900;font-size:20px">${esc(name)}</div>
+      <div style="color:var(--purple);font-size:12px;font-weight:900">@${esc(S.userData.username)} ${badgeHTML(S.userData)}</div>
+    </div>
+    <div class="menuItem" data-act="editProfile"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-user"/></svg></span><div class="lbl">Edit Profil</div></div>
+    <div class="menuItem" data-act="goSettings"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sliders"/></svg></span><div class="lbl">Pengaturan</div></div>
+    <div class="menuItem" data-act="openBlockedList"><span class="em" style="background:var(--red);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ban"/></svg></span><div class="lbl">Daftar Diblokir (${S.blocked.length})</div></div>
+    <div class="menuItem" data-act="openMyReports"><span class="em" style="background:var(--orange)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flag"/></svg></span><div class="lbl">Laporan Saya</div></div>
+    <div class="menuItem" data-act="openMyGroups"><span class="em" style="background:var(--green);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></span><div class="lbl">Grup Saya</div></div>
+    <div class="menuItem" data-act="openMyChannels"><span class="em" style="background:var(--pink);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></span><div class="lbl">Saluran Saya</div></div>
+    ${S.isAdmin ? '<div class="menuItem" data-act="adminPanel" style="background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff"><span class="em" style="background:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg></span><div class="lbl" style="color:#fff">Panel Admin</div></div>' : ''}
+    <div class="menuItem danger" data-act="logout"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-logout"/></svg></span><div class="lbl">Keluar</div></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+}
+$('myAvatar').onclick = showAvatarMenu;
+$('headerInfo').onclick = showAvatarMenu;
+
+/* ===== DIBLOKIR & LAPORAN SAYA ===== */
+async function openBlockedList() {
+  openModal(`<h3>DAFTAR DIBLOKIR</h3><div id="blList" style="max-height:420px;overflow-y:auto">${spinnerHTML}</div><div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+  const users = (await Promise.all(S.blocked.map(uid => getUser(uid)))).filter(Boolean);
+  $('blList').innerHTML = users.length
+    ? users.map(u => `<div class="listItem">${avHTML(u, 'sm')}<div class="info"><div class="name">${esc(u.displayName || u.username)}</div><div class="last">@${esc(u.username)}</div></div><button class="btn small green" data-act="unblock" data-id="${esc(u.uid)}">BUKA</button></div>`).join('')
+    : '<div class="emptyBox">Tidak ada</div>';
+}
+ACT.unblock = uid => { S.blocked = S.blocked.filter(x => x !== uid); applySettings(); toast('Dibuka'); openBlockedList(); refreshHome(); };
+ACT.blockUser = uid => { if (!S.blocked.includes(uid)) S.blocked.push(uid); applySettings(); toast('Diblokir'); closeModal(); refreshHome(); };
+ACT.openBlockedList = () => openBlockedList();
+
+async function openMyReports() {
+  openModal(`<h3>LAPORAN SAYA</h3><div id="rpList" style="max-height:420px;overflow-y:auto">${spinnerHTML}</div><div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+  try {
+    const snap = await getDocs(query(collection(db, 'reports'), where('reporterId', '==', S.user.uid), limit(30)));
+    const reps = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
+    $('rpList').innerHTML = reps.length
+      ? reps.map(r => `<div class="menuItem"><div class="lbl"><div>${esc(r.reason)}: @${esc(r.reportedUser)}</div><div class="sub">Status: ${esc(r.status)}</div></div></div>`).join('')
+      : '<div class="emptyBox">Belum ada</div>';
+  } catch (e) { $('rpList').innerHTML = '<div class="emptyBox">Gagal memuat</div>'; }
+}
+ACT.openMyReports = () => openMyReports();
+
+/* ===== UNDANGAN LEWAT LINK ===== */
+async function handleInvites() {
+  if (S.inviteDone) return;
+  S.inviteDone = true;
+  const p = new URLSearchParams(location.search);
+  const g = p.get('group'), c = p.get('channel');
+  if (!g && !c) return;
+  const kind = g ? 'groups' : 'channels', id = g || c;
+  try {
+    const d = await getDocData(kind, id);
+    if (d && !(d.members || []).includes(S.user.uid) && confirm(`Join ${g ? 'grup' : 'saluran'} "${d.name}"?`)) {
+      await updateDoc(doc(db, kind, id), { members: [...(d.members || []), S.user.uid] });
+      toast('Bergabung');
+    }
+  } catch (e) { toast('Gagal join'); }
+  history.replaceState({}, '', location.pathname);
+}
+
+/* ===== AKSI PENGGUNA (opsi & laporan) ===== */
+ACT.userOpts = async uid => {
+  const u = await getUser(uid);
+  if (!u) return;
+  openModal(`<h3>${esc(u.displayName || u.username)}</h3>
+    <div class="menuItem" data-act="openChat" data-id="${esc(uid)}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg></span><div class="lbl">Buka Chat</div></div>
+    <div class="menuItem" data-act="viewProfile" data-id="${esc(uid)}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-user"/></svg></span><div class="lbl">Lihat Profil</div></div>
+    <div class="menuItem danger" data-act="blockUser" data-id="${esc(uid)}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ban"/></svg></span><div class="lbl">Blokir</div></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+};
+ACT.reportUser = async uid => { const u = await getUser(uid); if (u) openReport({ uid, username: u.username }); };
+
+function openReport(t) { // t: {uid, username, msgId?}
+  let evidence = '';
+  openModal(`<h3>LAPORKAN ${t.msgId ? 'PESAN' : 'PENGGUNA'}</h3>
+    <div class="small" style="margin-bottom:8px">Dari @${esc(t.username)}</div>
+    <div class="field"><label>Alasan</label><select id="rpReason">
+      <option value="spam">Spam</option><option value="abuse">Pelecehan</option><option value="scam">Penipuan</option>
+      <option value="porn">Konten dewasa</option><option value="violence">Kekerasan</option><option value="other">Lainnya</option></select></div>
+    <div class="field"><label>Detail</label><textarea id="rpDetail" rows="2"></textarea></div>
+    <div class="field"><label>Bukti Foto (WAJIB)</label>
+      <div class="uploadBox" id="rpBox">PILIH FOTO</div>
+      <input type="file" id="rpFile" accept="image/*" class="hidden"/>
+      <img id="rpPrev" class="imgPreview hidden" alt=""/></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn danger" id="rpOk">KIRIM</button></div>`);
+  $('rpBox').onclick = () => $('rpFile').click();
+  $('rpFile').onchange = async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+      evidence = await makeThumb(f, 1024, 0.7);
+      $('rpPrev').src = evidence; $('rpPrev').classList.remove('hidden');
+      $('rpBox').textContent = '✓ ' + f.name;
+    } catch (err) { toast('Gambar tidak valid'); }
+  };
+  $('rpOk').onclick = async () => {
+    if (!evidence) return toast('Foto bukti WAJIB');
+    try {
+      await addDoc(collection(db, 'reports'), {
+        reporterId: S.user.uid, reporterName: S.userData.username, reportedUid: t.uid, reportedUser: t.username,
+        reportedMsgId: t.msgId || null, reason: $('rpReason').value, detail: $('rpDetail').value.trim(),
+        evidence, status: 'pending', createdAt: serverTimestamp()
+      });
+      closeModal(); toast('Laporan terkirim');
+    } catch (err) { toast('Gagal kirim laporan'); }
+  };
+}
+/* ===== CHAT: buka & koleksi pesan ===== */
+function msgCol() {
+  if (S.currentChatType === 'channel') return collection(db, 'channels', S.currentChat, 'messages');
+  if (S.currentChatType === 'group') return collection(db, 'groups', S.currentChat, 'messages');
+  return collection(db, 'chats', [S.user.uid, S.currentChat].sort().join('_'), 'messages');
+}
+function openChatView(info) { // info: {type, id, name, photo, icon, sub}
+  S.currentChat = info.id; S.currentChatType = info.type;
+  S.replyTo = null; $('replyBar').classList.add('hidden');
+  $('chatTitle').innerHTML = esc(info.name) + (info.u ? badgeHTML(info.u) : '');
+  $('chatStatus').textContent = info.sub || '';
+  setAvatar($('chatAvatar'), info.photo, info.icon || initOf(info.name));
+  $('chatView').classList.add('open');
+  startMsgListener();
+  if (info.type === 'private') startPeerWatch(info.id); else stopPeerWatch();
+  if (info.type !== 'channel') setTimeout(() => $('msgInput').focus(), 250);
+}
+function closeChat() {
+  $('chatView').classList.remove('open');
+  stopMsgListener();
+  stopPeerWatch();
+  S.currentChat = null; S.currentChatType = null;
+}
+ACT.openChat = async uid => {
+  closeModal();
+  const u = await getUser(uid);
+  if (!u) return toast('Pengguna tidak ditemukan');
+  openChatView({ type: 'private', id: uid, name: u.displayName || u.username, photo: u.photo, sub: 'ketuk untuk profil', u });
+};
+
+/* Pesan: muat 30 terbaru dulu, pesan lama dimuat saat scroll ke atas.
+   Listener realtime hanya untuk pesan baru/berubah sejak pesan terlama yang sudah dimuat. */
+function stopMsgListener() {
+  if (S.unsubMsgs) { S.unsubMsgs(); S.unsubMsgs = null; }
+  S.msgSeq++;
+  S.msgMap = new Map(); S.msgOldestSnap = null; S.msgHasMore = false; S.msgLoading = false;
+}
+async function startMsgListener() {
+  stopMsgListener();
+  const seq = S.msgSeq, col = msgCol();
+  $('messages').innerHTML = spinnerHTML;
+  try {
+    const first = await getDocs(query(col, orderBy('createdAt'), limitToLast(MSG_PAGE)));
+    if (seq !== S.msgSeq) return;
+    first.forEach(d => S.msgMap.set(d.id, { id: d.id, ...d.data() }));
+    S.msgOldestSnap = first.docs[0] || null;
+    S.msgHasMore = first.size >= MSG_PAGE;
+    renderMessages(true);
+    const since = first.docs.length ? first.docs[0].get('createdAt') : null;
+    const cons = [orderBy('createdAt')];
+    if (since) cons.unshift(where('createdAt', '>=', since));
+    S.unsubMsgs = onSnapshot(query(col, ...cons), snap => {
+      if (seq !== S.msgSeq) return;
+      const box = $('messages');
+      const near = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'removed') S.msgMap.delete(ch.doc.id);
+        else S.msgMap.set(ch.doc.id, { id: ch.doc.id, ...ch.doc.data() });
+      });
+      renderMessages(near);
+    }, () => toast('Pesan gagal dimuat (cek aturan Firestore)'));
+  } catch (e) {
+    if (seq === S.msgSeq) $('messages').innerHTML = '<div class="emptyBox">Gagal memuat pesan</div>';
+  }
+}
+async function loadOlderMsgs() {
+  if (S.msgLoading || !S.msgHasMore || !S.msgOldestSnap) return;
+  S.msgLoading = true;
+  const seq = S.msgSeq, box = $('messages');
+  const prevH = box.scrollHeight, prevTop = box.scrollTop;
+  try {
+    const snap = await getDocs(query(msgCol(), orderBy('createdAt'), endBefore(S.msgOldestSnap), limitToLast(MSG_PAGE)));
+    if (seq !== S.msgSeq) return;
+    snap.forEach(d => { if (!S.msgMap.has(d.id)) S.msgMap.set(d.id, { id: d.id, ...d.data() }); });
+    if (snap.docs.length) S.msgOldestSnap = snap.docs[0];
+    S.msgHasMore = snap.size >= MSG_PAGE;
+    renderMessages(false);
+    box.scrollTop = prevTop + (box.scrollHeight - prevH);
+  } catch (e) {
+    toast('Gagal memuat pesan lama');
+  } finally {
+    S.msgLoading = false;
+  }
+}
+ACT.olderMsgs = () => loadOlderMsgs();
+$('messages').addEventListener('scroll', () => { if ($('messages').scrollTop < 80) loadOlderMsgs(); });
+
+const BIGMS = 8.64e15;
+function renderMessages(toBottom) {
+  const box = $('messages');
+  const list = [...S.msgMap.values()].sort((a, b) => tsMs(a.createdAt) - tsMs(b.createdAt));
+  if (!list.length) {
+    box.innerHTML = '<div class="welcome"><div class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg></div><h3>BELUM ADA PESAN</h3><p>Mulai percakapan</p></div>';
+    return;
+  }
+  const more = S.msgHasMore ? '<div class="loadMore"><button class="btn small ghost" data-act="olderMsgs">MUAT PESAN LAMA</button></div>' : '';
+  box.innerHTML = more + list.map(msgHTML).join('');
+  if (toBottom) box.scrollTop = box.scrollHeight;
+}
+function msgHTML(m) {
+  const mine = m.uid === S.user.uid;
+  const side = mine ? 'flex-end' : 'flex-start';
+  const cls = mine ? 'out' : 'in';
+  const sender = !mine && S.currentChatType !== 'private'
+    ? `<span class="sender">${esc(m.displayName || m.username || '')}${isStaff(S.userCache.get(m.uid)) || m.username === ADMIN_USERNAME ? badgeHTML({ isAdmin: true }) : ''}</span>` : '';
+  const reply = m.replyTo ? `<div class="reply"><b>${esc(m.replyTo.name)}</b>${esc(String(m.replyTo.text || '').slice(0, 50))}</div>` : '';
+  const btn = (act, icon, label) => `<button data-act="${act}" data-id="${m.id}" title="${label}" aria-label="${label}">${svgIcon(icon)}</button>`;
+  const acts = '<div class="actionsRow">'
+    + btn('msgReply', 'reply', 'Balas')
+    + btn('msgReact', 'smile', 'Reaksi')
+    + (m.type === 'text' ? btn('msgCopy', 'copy', 'Salin') : '')
+    + (mine && m.type === 'text' ? btn('msgEdit', 'edit', 'Edit') : '')
+    + (mine || S.isAdmin ? btn('msgDelete', 'trash', 'Hapus') : '')
+    + (!mine ? btn('msgReport', 'flag', 'Laporkan') : '')
+    + '</div>';
+  const meta = `<span class="meta">${timeStr(m.createdAt)}</span>`;
+  const wrap = inner => `<div class="msgWrap" id="m-${m.id}" style="justify-content:${side}">${acts}${inner}</div>`;
+  if (m.type === 'sticker') return wrap(`<div class="bubble ${cls} sticker">${esc(m.text)}</div>`);
+  let body;
+  switch (m.type) {
+    case 'image': body = `<img class="att" loading="lazy" decoding="async" src="${esc(m.file)}" data-act="openUrl" data-url="${esc(m.file)}" alt=""/>`; break;
+    case 'video': body = `<video class="att" controls preload="metadata" playsinline src="${esc(m.file)}"></video>`; break;
+    case 'audio': body = `<audio controls preload="none" src="${esc(m.file)}"></audio><div class="fname">${esc(m.fileName || '')}</div>`; break;
+    case 'voice': body = `<audio controls preload="none" src="${esc(m.audio)}"></audio>`; break;
+    case 'file': body = `<a class="fileCard" href="${esc(m.file)}" target="_blank" rel="noopener" download="${esc(m.fileName || 'file')}"><div class="fileIcon">${svgIcon('file')}</div><div class="fileInfo"><div class="fileName">${esc(m.fileName || 'file')}</div><div class="fileSize">${fmtBytes(m.fileSize || 0)}</div></div><div class="fileDl">${svgIcon('download')}</div></a>`; break;
+    case 'location': body = `${svgIcon('pin')} <a href="https://maps.google.com/?q=${Number(m.lat)},${Number(m.lng)}" target="_blank" rel="noopener">Lihat lokasi</a>`; break;
+    case 'poll': body = `${svgIcon('poll')} <b>${esc(m.text)}</b>${(m.options || []).map(o => `<div class="pollOpt">${esc(o)}</div>`).join('')}`; break;
+    case 'contact': body = `${svgIcon('user')} <b>${esc(m.contactName)}</b><br><span class="small">@${esc(m.contactUsername)}</span>`; break;
+    default: body = linkify(m.text || '') + (m.edited ? ' <span class="edited">(edit)</span>' : '');
+  }
+  return wrap(`<div class="bubble ${cls}">${sender}${reply}${body}${reactsHTML(m)}${meta}</div>`);
+}
+$('messages').addEventListener('touchstart', e => {
+  const w = e.target.closest('.msgWrap');
+  if (!w) return;
+  document.querySelectorAll('.msgWrap.show-actions').forEach(x => { if (x !== w) x.classList.remove('show-actions'); });
+  w.classList.add('show-actions');
+  clearTimeout(w._t);
+  w._t = setTimeout(() => w.classList.remove('show-actions'), 2500);
+}, { passive: true });
+
+/* ===== KIRIM PESAN & UNGGAH MEDIA ===== */
+/* Firebase Storage dimuat saat pertama dibutuhkan (halaman awal lebih ringan) */
+let STORE = null;
+async function getStore() {
+  if (!STORE) {
+    const m = await import('https://www.gstatic.com/firebasejs/13.0.0/firebase-storage.js');
+    STORE = { m, s: m.getStorage(app) };
+  }
+  return STORE;
+}
+async function storeBlob(blob, path) {
+  try {
+    const { m, s } = await getStore();
+    const r = m.ref(s, path);
+    await m.uploadBytes(r, blob);
+    return await m.getDownloadURL(r);
+  } catch (e) {
+    // Cadangan jika Firebase Storage belum aktif: disimpan langsung di dokumen (batas dokumen Firestore ~1 MB)
+    if (blob.size > 600 * 1024) throw e;
+    return blobToDataURL(blob);
+  }
+}
+async function uploadMedia(file, folder) {
+  let blob = file;
+  if (file.type.startsWith('image/') && file.type !== 'image/gif') {
+    try { blob = await imageToBlob(file, 1280, 0.75); } catch (e) { blob = file; }
+  }
+  const name = String(file.name || 'file').replace(/[^\w.\-]+/g, '_').slice(-60);
+  return storeBlob(blob, `${folder}/${S.user.uid}/${Date.now()}_${name}`);
+}
+// Foto profil/grup/saluran: 160px. Dokumen menyimpan URL kecil, bukan base64 besar.
+async function makePhoto(file, maxSide, folder) {
+  const blob = await imageToBlob(file, maxSide, 0.72);
+  return storeBlob(blob, `${folder}/${S.user.uid}/${Date.now()}.jpg`);
+}
+async function sendMessage(type, payload, extra = {}) {
+  if (!S.currentChat) return;
+  const data = {
+    uid: S.user.uid, username: S.userData.username,
+    displayName: S.userData.displayName || S.userData.username,
+    type, createdAt: serverTimestamp(), ...extra
+  };
+  if (S.replyTo) data.replyTo = S.replyTo;
+  if (['text', 'sticker', 'poll'].includes(type)) data.text = payload;
+  else if (type === 'voice') data.audio = payload;
+  else if (payload) data.file = payload;
+  try {
+    await addDoc(msgCol(), data);
+    S.replyTo = null; $('replyBar').classList.add('hidden');
+    const box = $('messages'); box.scrollTop = box.scrollHeight;
+  } catch (e) { toast('Gagal mengirim'); }
+}
+async function sendMedia(f) {
+  if (!S.currentChat) return;
+  if (f.size > MAX_FILE) return toast('Maks ukuran file 25 MB');
+  const isVid = f.type.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(f.name);
+  const isAud = f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a)$/i.test(f.name);
+  const type = f.type.startsWith('image/') ? 'image' : isVid ? 'video' : isAud ? 'audio' : 'file';
+  toast('Mengunggah...');
+  try {
+    const url = await uploadMedia(f, 'chat');
+    await sendMessage(type, url, { fileName: f.name, fileSize: f.size });
+    toast('Terkirim');
+  } catch (e) { toast('Upload gagal. Pastikan Firebase Storage aktif'); }
+}
+
+$('btnSend').onclick = () => {
+  const t = $('msgInput').value.trim();
+  if (!t) return;
+  $('msgInput').value = ''; $('msgInput').style.height = 'auto';
+  sendMessage('text', t);
+};
+$('msgInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('btnSend').click(); } });
+$('msgInput').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px'; });
+
+/* ===== LAMPIRAN ===== */
+$('btnAttach').onclick = () => $('attachMenu').classList.toggle('open');
+$('attachMenu').querySelectorAll('button').forEach(b => b.onclick = () => {
+  $('attachMenu').classList.remove('open');
+  const t = b.dataset.att;
+  if (t === 'gallery' || t === 'camera') pickFile(t === 'camera');
+  else if (t === 'voice') toggleVoice();
+  else if (t === 'location') sendLocation();
+  else if (t === 'contact') contactModal();
+  else if (t === 'poll') pollModal();
+});
+function pickFile(cam) {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  if (cam) { inp.accept = 'image/*'; inp.capture = 'environment'; }
+  inp.onchange = () => { const f = inp.files[0]; if (f) sendMedia(f); };
+  inp.click();
+}
+async function toggleVoice() {
+  if (S.rec) { S.rec.mr.stop(); return; } // ketuk lagi untuk berhenti
+  if (!navigator.mediaDevices || !window.MediaRecorder) return toast('Perekaman tidak didukung');
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch (e) { return toast('Izin mikrofon ditolak'); }
+  const mr = new MediaRecorder(stream), chunks = [];
+  S.rec = { mr, t: null };
+  mr.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  mr.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    if (S.rec) clearTimeout(S.rec.t);
+    S.rec = null;
+    const blob = new Blob(chunks, { type: 'audio/webm' });
+    if (blob.size > 700 * 1024) return toast('Voice note terlalu panjang');
+    await sendMessage('voice', await blobToDataURL(blob));
+    toast('Terkirim');
+  };
+  mr.start();
+  S.rec.t = setTimeout(() => { if (mr.state !== 'inactive') mr.stop(); }, 8000);
+  toast('Merekam... ketuk Voice lagi untuk berhenti');
+}
+function sendLocation() {
+  if (!navigator.geolocation) return toast('GPS tidak didukung');
+  navigator.geolocation.getCurrentPosition(
+    p => sendMessage('location', '', { lat: p.coords.latitude, lng: p.coords.longitude }),
+    () => toast('Gagal mengambil lokasi'));
+}
+function contactModal() {
+  openModal(`<h3>KIRIM KONTAK</h3><input id="ctQ" placeholder="Cari username..." autocapitalize="none"/><div id="ctRes" class="pickList"></div><div class="actions"><button class="btn ghost" data-act="close">Batal</button></div>`);
+  const run = debounce(async term => {
+    const users = await searchUsers(term);
+    pickList($('ctRes'), users, u => {
+      closeModal();
+      sendMessage('contact', '', { contactName: u.displayName || u.username, contactUsername: u.username });
+    });
+  }, 300);
+  $('ctQ').oninput = e => run(e.target.value.trim().toLowerCase());
+}
+function pollModal() {
+  openModal(`<h3>POLLING</h3><input id="pollQ" placeholder="Pertanyaan" maxlength="120"/><input id="pollOpts" placeholder="Opsi1, Opsi2, Opsi3" style="margin-top:8px"/><div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn" id="pollOk">KIRIM</button></div>`);
+  $('pollOk').onclick = () => {
+    const q = $('pollQ').value.trim();
+    const opts = $('pollOpts').value.split(',').map(x => x.trim()).filter(Boolean);
+    if (!q || opts.length < 2) return toast('Isi pertanyaan & min. 2 opsi');
+    closeModal();
+    sendMessage('poll', q, { options: opts.slice(0, 10) });
+  };
+}
+
+/* ===== AKSI PESAN ===== */
+ACT.msgReply = id => {
+  const m = S.msgMap.get(id);
+  if (!m) return;
+  S.replyTo = { id, text: m.text || `[${m.type}]`, name: m.displayName || m.username || '' };
+  $('replyText').innerHTML = `<b>Membalas ${esc(S.replyTo.name)}</b>${esc(String(S.replyTo.text).slice(0, 60))}`;
+  $('replyBar').classList.remove('hidden');
+  $('msgInput').focus();
+};
+$('btnCancelReply').onclick = () => { S.replyTo = null; $('replyBar').classList.add('hidden'); };
+ACT.msgEdit = id => {
+  const m = S.msgMap.get(id);
+  if (!m) return;
+  openModal(`<h3>EDIT PESAN</h3><textarea id="emTxt" rows="3">${esc(m.text || '')}</textarea><div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn" id="emOk">SIMPAN</button></div>`);
+  $('emOk').onclick = async () => {
+    const t = $('emTxt').value.trim();
+    if (!t) return;
+    try { await updateDoc(doc(msgCol(), id), { text: t, edited: true }); toast('Diedit'); }
+    catch (e) { toast('Gagal edit'); }
+    closeModal();
+  };
+};
+ACT.msgDelete = async id => {
+  if (!confirm('Hapus pesan ini?')) return;
+  try { await deleteDoc(doc(msgCol(), id)); toast('Dihapus'); }
+  catch (e) { toast('Gagal hapus'); }
+};
+ACT.msgReport = id => {
+  const m = S.msgMap.get(id);
+  if (m) openReport({ uid: m.uid, username: m.username, msgId: id });
+};
+ACT.openUrl = (id, el) => window.open(el.dataset.url, '_blank');
+
+/* ===== REAKSI, SALIN, CARI DI CHAT ===== */
+ACT.msgReact = id => {
+  const m = S.msgMap.get(id);
+  if (!m) return;
+  const mineE = (m.reactions || {})[S.user.uid];
+  openModal(`<h3>${svgIcon('smile')} REAKSI</h3>
+    <div class="reactPick">${REACTS.map(e => `<button class="reactBtn${e === mineE ? ' on' : ''}" data-act="msgReactTo" data-id="${id}" data-emoji="${e}" aria-label="Reaksi ${e}">${e}</button>`).join('')}</div>
+    <div class="small" style="margin-top:8px">Ketuk emoji yang sama lagi untuk menghapus reaksimu.</div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+};
+ACT.msgReactTo = async (id, el) => {
+  const m = S.msgMap.get(id);
+  closeModal();
+  if (!m || !S.currentChat) return;
+  const emoji = el.dataset.emoji;
+  const val = (m.reactions || {})[S.user.uid] === emoji ? deleteField() : emoji;
+  try { await updateDoc(doc(msgCol(), id), { [`reactions.${S.user.uid}`]: val }); }
+  catch (e) { toast('Gagal memberi reaksi'); }
+};
+ACT.msgCopy = async id => {
+  const m = S.msgMap.get(id);
+  if (!m) return;
+  try { await navigator.clipboard.writeText(m.text || ''); toast('Pesan disalin'); }
+  catch (e) { toast('Gagal menyalin'); }
+};
+function openChatSearch() {
+  if (!S.currentChat) return;
+  openModal(`<h3>${svgIcon('search')} CARI PESAN</h3>
+    <input id="csQ" placeholder="Ketik kata yang dicari..." autocomplete="off"/>
+    <div id="csRes" class="pickList" style="max-height:340px"></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+  const run = debounce(q => {
+    const res = $('csRes'), t = String(q || '').trim().toLowerCase();
+    if (!res) return;
+    if (t.length < 2) { res.innerHTML = '<div class="emptyBox">Ketik minimal 2 huruf</div>'; return; }
+    const hits = [...S.msgMap.values()].filter(m => String(m.text || '').toLowerCase().includes(t))
+      .sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt)).slice(0, 40);
+    res.innerHTML = hits.length
+      ? hits.map(m => `<div class="pickRow" data-act="jumpMsg" data-id="${m.id}"><div class="pname">${esc(String(m.text).slice(0, 80))}<span>${esc(m.displayName || m.username || '')} · ${dateStr(m.createdAt)}</span></div></div>`).join('')
+      : '<div class="emptyBox">Tidak ada pesan yang cocok di pesan yang sudah dimuat</div>';
+  }, 200);
+  $('csQ').addEventListener('input', e => run(e.target.value));
+  $('csQ').focus();
+}
+ACT.jumpMsg = id => {
+  closeModal();
+  const el = $('m-' + id);
+  if (!el) return toast('Pesan ini belum dimuat. Gulir ke atas untuk memuat pesan lama.');
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  el.classList.add('hl');
+  setTimeout(() => el.classList.remove('hl'), 1800);
+};
+$('btnChatSearch').onclick = () => openChatSearch();
+
+/* ===== HEADER CHAT ===== */
+$('btnBack').onclick = () => closeChat();
+$('chatAvatar').onclick = () => chatInfo();
+$('btnChatMenu').onclick = () => chatMenu();
+function chatInfo() {
+  if (S.currentChatType === 'private') return viewProfile(S.currentChat);
+  if (S.currentChatType === 'group') return groupInfo(S.currentChat);
+  if (S.currentChatType === 'channel') return channelInfo(S.currentChat);
+}
+function chatMenu() {
+  if (!S.currentChat) return;
+  if (S.currentChatType !== 'private') return chatInfo();
+  openModal(`<h3>MENU</h3>
+    <div class="menuItem" data-act="viewProfile" data-id="${S.currentChat}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-user"/></svg></span><div class="lbl">Lihat Profil</div></div>
+    <div class="menuItem" data-act="reportUser" data-id="${S.currentChat}"><span class="em" style="background:var(--red);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flag"/></svg></span><div class="lbl">Laporkan</div></div>
+    <div class="menuItem" data-act="blockUser" data-id="${S.currentChat}"><span class="em" style="background:var(--orange)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ban"/></svg></span><div class="lbl">Blokir</div></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+}
+/* ===== DAFTAR PILIH PENGGUNA (dipakai kontak & anggota grup) ===== */
+function pickList(box, users, onPick, sel) {
+  box.innerHTML = users.length
+    ? users.map(u => `<div class="pickRow" data-uid="${esc(u.uid)}">${avHTML(u, 'sm')}<div class="pname">${esc(u.displayName || u.username)}${badgeHTML(u)}<span>@${esc(u.username)}</span></div><b class="pmark">${sel && sel.has(u.uid) ? '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--green)"><use href="#i-check"/></svg>' : ''}</b></div>`).join('')
+    : '<div class="emptyBox">Tidak ditemukan</div>';
+  box.querySelectorAll('.pickRow').forEach(el => el.onclick = () => onPick(users.find(u => u.uid === el.dataset.uid), el));
+}
+function inviteBox(link) {
+  return `<div class="inviteBox"><div class="ib-t">LINK UNDANGAN</div><div class="ib-l">${esc(link)}</div><button class="btn small block" data-act="copy" data-id="${esc(link)}">SALIN</button></div>`;
+}
+ACT.copy = async link => {
+  try { await navigator.clipboard.writeText(link); toast('Disalin'); }
+  catch (e) { toast('Gagal menyalin'); }
+};
+
+/* ===== STORY (24 jam terakhir, 30 terbaru) ===== */
+function loadStories() {
+  if (S.unsubStories) S.unsubStories();
+  const since = Timestamp.fromMillis(Date.now() - STORY_HOURS * 3600e3);
+  S.unsubStories = onSnapshot(query(collection(db, 'stories'), where('createdAt', '>=', since), orderBy('createdAt', 'desc'), limit(30)),
+    snap => { S.allStories = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderStories(); },
+    () => {});
+}
+function renderStories() {
+  const box = $('allStoriesList');
+  const by = new Map();
+  S.allStories.forEach(s => { if (!by.has(s.uid)) by.set(s.uid, []); by.get(s.uid).push(s); });
+  if (!by.size) {
+    box.innerHTML = `<div class="welcome"><div class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-clock"/></svg></div><h3>BELUM ADA STORY</h3><p>Story hilang otomatis setelah ${STORY_HOURS} jam</p></div>`;
+    return;
+  }
+  box.innerHTML = [...by.entries()].map(([uid, list]) => {
+    const f = list[0], name = f.displayName || f.username;
+    return `<div class="listItem" data-act="openStory" data-id="${esc(uid)}">${avHTML(f)}<div class="info"><div class="name">${esc(name)}</div><div class="last">${list.length} pembaruan</div></div><div class="time">${dateStr(f.createdAt)}</div></div>`;
+  }).join('');
+}
+ACT.openStory = uid => {
+  const list = S.allStories.filter(s => s.uid === uid).reverse();
+  if (!list.length) return;
+  S.storyList = list;
+  $('storyViewer').classList.add('open');
+  showStoryAt(0);
+};
+function showStoryAt(i) {
+  clearTimeout(S.storyTimer);
+  const list = S.storyList, s = list[i];
+  if (!s) return closeStory();
+  const dur = s.type === 'video' ? 15 : 5;
+  $('storyBar').innerHTML = list.map((_, k) =>
+    `<div><div class="sfill" style="${k === i ? `animation:fillBar ${dur}s linear forwards` : `width:${k < i ? 100 : 0}%`}"></div></div>`).join('');
+  $('storyName').textContent = s.displayName || s.username || '';
+  setAvatar($('storyAvatar'), s.photo, initOf(s.displayName || s.username));
+  let html;
+  if (s.type === 'image' && s.media) html = `<img src="${esc(s.media)}" class="storyMedia" alt=""/>`;
+  else if (s.type === 'video' && s.media) html = `<video src="${esc(s.media)}" autoplay playsinline controls class="storyMedia"></video>`;
+  else html = `<div class="text">${esc(s.text || '')}</div>`;
+  if (s.text && s.type !== 'text') html += `<div class="storyCap">${esc(s.text)}</div>`;
+  $('storyContent').innerHTML = html;
+  const v = $('storyContent').querySelector('video');
+  if (v) v.onended = () => showStoryAt(i + 1);
+  S.storyTimer = setTimeout(() => showStoryAt(i + 1), dur * 1000);
+}
+function closeStory() {
+  clearTimeout(S.storyTimer);
+  $('storyViewer').classList.remove('open');
+  $('storyContent').innerHTML = '';
+}
+$('btnCloseStory').onclick = closeStory;
+$('btnAddStory').onclick = () => createStoryModal();
+function createStoryModal() {
+  openModal(`<h3>TAMBAH STORY</h3>
+    <div class="small" style="margin-bottom:12px">Otomatis hilang setelah ${STORY_HOURS} jam</div>
+    <div class="grid2">
+      <button class="btn pink" id="stImg">FOTO</button><button class="btn blue" id="stVid">VIDEO</button>
+      <button class="btn orange" id="stTxt">TEKS</button><button class="btn danger" id="stLive">LIVE</button>
+    </div>
+    <div id="stArea"></div>
+    <div class="actions"><button class="btn ghost block" data-act="close">Batal</button></div>`);
+  $('stImg').onclick = () => storyForm('image');
+  $('stVid').onclick = () => storyForm('video');
+  $('stTxt').onclick = () => {
+    $('stArea').innerHTML = '<textarea id="stText" rows="3" maxlength="200" placeholder="Tulis..."></textarea><button class="btn block" id="stPost" style="margin-top:8px">POSTING</button>';
+    $('stPost').onclick = async () => {
+      const text = $('stText').value.trim();
+      if (!text) return toast('Isi teks');
+      try {
+        await addDoc(collection(db, 'stories'), { uid: S.user.uid, username: S.userData.username, displayName: S.userData.displayName || S.userData.username, photo: S.userData.photo || '', text, type: 'text', createdAt: serverTimestamp() });
+        closeModal(); toast('Diposting');
+      } catch (e) { toast('Gagal posting'); }
+    };
+  };
+  $('stLive').onclick = () => { closeModal(); startLive(); };
+}
+function storyForm(type) {
+  $('stArea').innerHTML = `<input type="file" id="stFile" accept="${type === 'image' ? 'image/*' : 'video/*'}"/><input id="stCap" placeholder="Caption (opsional)" maxlength="120" style="margin-top:8px"/><button class="btn block" id="stPost" style="margin-top:8px">POSTING</button>`;
+  $('stPost').onclick = async () => {
+    const f = $('stFile').files[0];
+    if (!f) return toast('Pilih file');
+    if (f.size > MAX_FILE) return toast('Maks ukuran 25 MB');
+    toast('Mengunggah...');
+    try {
+      const media = await uploadMedia(f, 'story');
+      await addDoc(collection(db, 'stories'), { uid: S.user.uid, username: S.userData.username, displayName: S.userData.displayName || S.userData.username, photo: S.userData.photo || '', text: $('stCap').value.trim(), media, type, createdAt: serverTimestamp() });
+      closeModal(); toast('Diposting');
+    } catch (e) { toast('Gagal posting. Pastikan Firebase Storage aktif'); }
+  };
+}
+
+/* ===== GRUP SAYA (hanya grup yang saya ikuti) ===== */
+function loadGroups() {
+  if (S.unsubGroups) S.unsubGroups();
+  S.unsubGroups = onSnapshot(query(collection(db, 'groups'), where('members', 'array-contains', S.user.uid), limit(50)),
+    snap => {
+      S.allGroups = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => tsMs(b.createdAt) - tsMs(a.createdAt));
+      renderGroups();
+    }, () => {});
+}
+function renderGroups() {
+  $('groupsList').innerHTML = S.allGroups.map(groupRow).join('');
+}
+ACT.openGroup = async id => {
+  closeModal();
+  const g = await getDocData('groups', id);
+  if (!g) return toast('Grup tidak ditemukan');
+  openChatView({ type: 'group', id, name: g.name, photo: g.photo, sub: `${(g.members || []).length} anggota` });
+};
+async function groupInfo(id) {
+  const g = await getDocData('groups', id);
+  if (!g) return toast('Grup tidak ditemukan');
+  const isAdm = (g.admins || []).includes(S.user.uid) || g.ownerId === S.user.uid;
+  const link = `${location.origin}${location.pathname}?group=${g.id}`;
+  openModal(`<h3>INFO GRUP</h3>
+    <div style="text-align:center;padding:12px 0">
+      ${g.photo ? `<div class="avatar xl" style="background-image:url('${esc(g.photo)}');margin:0 auto 12px"></div>` : '<div class="avatar xl" style="margin:0 auto 12px"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></div>'}
+      <div style="font-weight:900;font-size:18px">${esc(g.name)}</div>
+      <div class="small">${(g.members || []).length} anggota</div>
+    </div>
+    ${inviteBox(link)}
+    ${isAdm ? `<div class="menuItem" data-act="editGroup" data-id="${g.id}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-edit"/></svg></span><div class="lbl">Edit Grup</div></div>
+      <div class="menuItem" data-act="manageMembers" data-id="${g.id}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></span><div class="lbl">Kelola Anggota</div></div>
+      <div class="menuItem" data-act="groupPhoto" data-id="${g.id}"><span class="em" style="background:var(--pink);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-image"/></svg></span><div class="lbl">Ganti Foto</div></div>` : ''}
+    <div class="menuItem danger" data-act="leaveGroup" data-id="${g.id}"><span class="em" style="background:var(--red);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-logout"/></svg></span><div class="lbl">Keluar Grup</div></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+}
+ACT.editGroup = async id => {
+  const g = await getDocData('groups', id);
+  if (!g) return;
+  openModal(`<h3>EDIT GRUP</h3><input id="egName" value="${esc(g.name)}" maxlength="40"/><textarea id="egDesc" rows="2" maxlength="200" style="margin-top:8px">${esc(g.desc || '')}</textarea><div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn" id="egOk">SIMPAN</button></div>`);
+  $('egOk').onclick = async () => {
+    const name = $('egName').value.trim();
+    if (name.length < 2) return toast('Nama min 2 karakter');
+    try { await updateDoc(doc(db, 'groups', id), { name, desc: $('egDesc').value.trim() }); toast('Diperbarui'); }
+    catch (e) { toast('Gagal menyimpan'); }
+    closeModal();
+  };
+};
+ACT.groupPhoto = id => pickImage(async f => {
+  const photo = await makePhoto(f, 160, 'groups');
+  await updateDoc(doc(db, 'groups', id), { photo });
+  toast('Foto diperbarui');
+});
+ACT.manageMembers = id => showMembers(id);
+async function showMembers(id) {
+  const g = await getDocData('groups', id);
+  if (!g) return;
+  openModal(`<h3>KELOLA ANGGOTA</h3><div id="mmList" style="max-height:420px;overflow-y:auto">${spinnerHTML}</div><div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+  const users = await Promise.all((g.members || []).map(uid => getUser(uid)));
+  $('mmList').innerHTML = (g.members || []).map((uid, i) => {
+    const u = users[i] || { uid, username: uid.slice(0, 6), displayName: 'Tidak dikenal' };
+    const isOwner = uid === g.ownerId, isA = (g.admins || []).includes(uid);
+    return `<div class="listItem">${avHTML(u, 'sm')}<div class="info"><div class="name">${esc(u.displayName || u.username)} ${isOwner ? 'OWNER' : isA ? 'ADMIN' : ''}</div><div class="last">@${esc(u.username)}</div></div>${isOwner ? '' : `<button class="btn small ${isA ? 'danger' : 'green'}" data-act="toggleAdmin" data-id="${id}" data-uid="${esc(uid)}">${isA ? 'DEMOTE' : 'PROMOTE'}</button>`}</div>`;
+  }).join('');
+}
+ACT.toggleAdmin = async (gid, el) => {
+  const uid = el.dataset.uid;
+  const g = await getDocData('groups', gid);
+  if (!g) return;
+  const admins = g.admins || [];
+  const next = admins.includes(uid) ? admins.filter(x => x !== uid) : [...admins, uid];
+  try { await updateDoc(doc(db, 'groups', gid), { admins: next }); }
+  catch (e) { return toast('Gagal mengubah peran'); }
+  showMembers(gid);
+};
+ACT.leaveGroup = async id => {
+  if (!confirm('Keluar dari grup?')) return;
+  const g = await getDocData('groups', id);
+  if (!g) return;
+  try { await updateDoc(doc(db, 'groups', id), { members: (g.members || []).filter(x => x !== S.user.uid) }); }
+  catch (e) { return toast('Gagal keluar'); }
+  if (S.currentChat === id) closeChat();
+  closeModal(); toast('Kamu keluar dari grup');
+};
+function newGroupModal() {
+  const sel = new Map();
+  let photo = '', lastUsers = [];
+  openModal(`<h3>BUAT GRUP</h3>
+    <input id="gName" placeholder="Nama grup" maxlength="40"/>
+    <div class="uploadBox" id="gPick" style="margin-top:8px">FOTO GRUP (OPSIONAL)</div>
+    <input type="file" id="gFile" accept="image/*" class="hidden"/>
+    <input id="gQ" placeholder="Cari username anggota..." style="margin-top:8px" autocapitalize="none"/>
+    <div class="selLine" id="gSel">Belum ada anggota dipilih</div>
+    <div id="gRes" class="pickList"></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn green" id="gOk">BUAT</button></div>`);
+  const showSel = () => { $('gSel').textContent = sel.size ? `Dipilih (${sel.size}): ` + [...sel.values()].map(u => '@' + u.username).join(', ') : 'Belum ada anggota dipilih'; };
+  const renderRes = () => pickList($('gRes'), lastUsers, u => {
+    if (sel.has(u.uid)) sel.delete(u.uid); else sel.set(u.uid, u);
+    showSel(); renderRes();
+  }, sel);
+  const search = debounce(async term => { lastUsers = await searchUsers(term); renderRes(); }, 300);
+  $('gQ').oninput = e => search(e.target.value.trim().toLowerCase());
+  $('gPick').onclick = () => $('gFile').click();
+  $('gFile').onchange = async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    photo = await makePhoto(f, 160, 'groups').catch(() => '');
+    $('gPick').textContent = '✓ ' + f.name;
+  };
+  $('gOk').onclick = async () => {
+    const name = $('gName').value.trim();
+    if (name.length < 2) return toast('Nama min 2 karakter');
+    try {
+      const r = await addDoc(collection(db, 'groups'), {
+        name, desc: '', photo, ownerId: S.user.uid, ownerName: S.userData.username,
+        admins: [S.user.uid], members: [S.user.uid, ...sel.keys()], createdAt: serverTimestamp()
+      });
+      closeModal(); toast('Grup dibuat');
+      ACT.openGroup(r.id);
+    } catch (e) { toast('Gagal membuat grup'); }
+  };
+}
+ACT.newGroup = () => newGroupModal();
+$('btnNewGroup').onclick = () => newGroupModal();
+async function openMyGroups() {
+  openModal(`<h3>GRUP SAYA (${S.allGroups.length})</h3>
+    ${S.allGroups.map(g => `<div class="menuItem" data-act="openGroup" data-id="${g.id}"><span class="em" style="background:var(--green);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></span><div class="lbl">${esc(g.name)}<div class="sub">${(g.members || []).length} anggota</div></div></div>`).join('') || '<div class="emptyBox">Belum ada grup</div>'}
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button><button class="btn green" data-act="newGroup">+ GRUP</button></div>`);
+}
+ACT.openMyGroups = () => openMyGroups();
+
+/* ===== SALURAN (daftar per halaman) ===== */
+ACT.openChannel = async id => {
+  closeModal();
+  const c = await getDocData('channels', id);
+  if (!c) return toast('Saluran tidak ditemukan');
+  openChatView({ type: 'channel', id, name: c.name, photo: c.photo, sub: `${(c.members || []).length} anggota · saluran` });
+};
+async function channelInfo(id) {
+  const c = await getDocData('channels', id);
+  if (!c) return toast('Saluran tidak ditemukan');
+  const isAdm = (c.admins || []).includes(S.user.uid) || c.ownerId === S.user.uid;
+  const link = `${location.origin}${location.pathname}?channel=${c.id}`;
+  openModal(`<h3>INFO SALURAN</h3>
+    <div style="text-align:center;padding:12px 0">
+      ${c.photo ? `<div class="avatar xl" style="background-image:url('${esc(c.photo)}');margin:0 auto 12px"></div>` : '<div class="avatar xl" style="margin:0 auto 12px"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></div>'}
+      <div style="font-weight:900;font-size:18px">${esc(c.name)}</div>
+      <div class="small">${(c.members || []).length} anggota</div>
+      <div class="small" style="margin-top:6px">${esc(c.desc || '')}</div>
+    </div>
+    ${inviteBox(link)}
+    ${isAdm ? `<div class="menuItem" data-act="editChannel" data-id="${c.id}"><span class="em"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-edit"/></svg></span><div class="lbl">Edit Saluran</div></div>
+      <div class="menuItem" data-act="channelPhoto" data-id="${c.id}"><span class="em" style="background:var(--pink);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-image"/></svg></span><div class="lbl">Ganti Foto</div></div>` : ''}
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+}
+ACT.editChannel = async id => {
+  const c = await getDocData('channels', id);
+  if (!c) return;
+  openModal(`<h3>EDIT SALURAN</h3><input id="ecName" value="${esc(c.name)}" maxlength="40"/><textarea id="ecDesc" rows="2" maxlength="200" style="margin-top:8px">${esc(c.desc || '')}</textarea><div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn" id="ecOk">SIMPAN</button></div>`);
+  $('ecOk').onclick = async () => {
+    const name = $('ecName').value.trim();
+    if (name.length < 3) return toast('Nama min 3 karakter');
+    try { await updateDoc(doc(db, 'channels', id), { name, desc: $('ecDesc').value.trim() }); toast('Diperbarui'); }
+    catch (e) { toast('Gagal menyimpan'); }
+    closeModal();
+  };
+};
+ACT.channelPhoto = id => pickImage(async f => {
+  const photo = await makePhoto(f, 160, 'channels');
+  await updateDoc(doc(db, 'channels', id), { photo });
+  toast('Foto diperbarui');
+});
+function createChannelModal() {
+  let photo = '';
+  openModal(`<h3>BUAT SALURAN</h3>
+    <input id="chName" placeholder="Nama saluran" maxlength="40"/>
+    <textarea id="chDesc" rows="2" placeholder="Deskripsi" maxlength="200" style="margin-top:8px"></textarea>
+    <div class="uploadBox" id="chPick" style="margin-top:8px">FOTO (OPSIONAL)</div>
+    <input type="file" id="chFile" accept="image/*" class="hidden"/>
+    <div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn pink" id="chOk">BUAT</button></div>`);
+  $('chPick').onclick = () => $('chFile').click();
+  $('chFile').onchange = async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    photo = await makePhoto(f, 160, 'channels').catch(() => '');
+    $('chPick').textContent = '✓ ' + f.name;
+  };
+  $('chOk').onclick = async () => {
+    const name = $('chName').value.trim();
+    if (name.length < 3) return toast('Nama min 3 karakter');
+    try {
+      const r = await addDoc(collection(db, 'channels'), {
+        name, desc: $('chDesc').value.trim(), photo, ownerId: S.user.uid, ownerName: S.userData.username,
+        members: [S.user.uid], admins: [S.user.uid], createdAt: serverTimestamp()
+      });
+      closeModal(); CHANNELS.reset(); toast('Saluran dibuat');
+      ACT.openChannel(r.id);
+    } catch (e) { toast('Gagal membuat saluran'); }
+  };
+}
+ACT.newChannel = () => createChannelModal();
+$('btnNewChannel').onclick = () => createChannelModal();
+async function openMyChannels() {
+  openModal(`<h3>SALURAN SAYA</h3><div id="mcList" style="max-height:420px;overflow-y:auto">${spinnerHTML}</div><div class="actions"><button class="btn ghost" data-act="close">Tutup</button><button class="btn pink" data-act="newChannel">+ SALURAN</button></div>`);
+  try {
+    const snap = await getDocs(query(collection(db, 'channels'), where('members', 'array-contains', S.user.uid), limit(50)));
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    $('mcList').innerHTML = list.length
+      ? list.map(c => `<div class="menuItem" data-act="openChannel" data-id="${c.id}"><span class="em" style="background:var(--pink);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></span><div class="lbl">${esc(c.name)}<div class="sub">${(c.members || []).length} anggota</div></div></div>`).join('')
+      : '<div class="emptyBox">Belum ada saluran</div>';
+  } catch (e) { $('mcList').innerHTML = '<div class="emptyBox">Gagal memuat</div>'; }
+}
+ACT.openMyChannels = () => openMyChannels();
+
+/* ===== PANEL ADMIN (cek admin di sisi klien saja; aturan keamanan wajib di Firestore/Storage) ===== */
+function adminPanel() {
+  if (!S.isAdmin) return;
+  openModal(`<h3>PANEL ADMIN</h3>
+    <div class="menuItem" data-act="adminReports"><span class="em" style="background:var(--red);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flag"/></svg></span><div class="lbl">Laporan Masuk</div></div>
+    <div class="menuItem" data-act="adminGroups"><span class="em" style="background:var(--green);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></span><div class="lbl">Kelola Grup</div></div>
+    <div class="menuItem" data-act="adminChannels"><span class="em" style="background:var(--pink);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></span><div class="lbl">Kelola Saluran</div></div>
+    <div class="menuItem" data-act="adminUsers"><span class="em" style="background:var(--cyan)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-user"/></svg></span><div class="lbl">Kelola Pengguna</div></div>
+    <div class="menuItem" data-act="adminVerify"><span class="em" style="background:var(--orange)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-verify"/></svg></span><div class="lbl">Verifikasi</div></div>
+    <div class="menuItem" data-act="adminBroadcast"><span class="em" style="background:var(--purple);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-send"/></svg></span><div class="lbl">Broadcast</div></div>
+    <div class="menuItem" data-act="adminStats"><span class="em" style="background:var(--yellow)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chart"/></svg></span><div class="lbl">Statistik</div></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+}
+ACT.adminPanel = () => adminPanel();
+function adminOpen(title) {
+  openModal(`<h3>${title}</h3><div id="admBody" style="max-height:420px;overflow-y:auto">${spinnerHTML}</div><div class="actions"><button class="btn ghost" data-act="close">Tutup</button></div>`);
+}
+const admBody = html => { const b = $('admBody'); if (b) b.innerHTML = html; };
+ACT.adminReports = async () => {
+  adminOpen('LAPORAN MASUK');
+  try {
+    const snap = await getDocs(query(collection(db, 'reports'), orderBy('createdAt', 'desc'), limit(50)));
+    admBody(snap.size ? snap.docs.map(d => {
+      const r = { id: d.id, ...d.data() };
+      return `<div class="menuItem" style="flex-direction:column;align-items:stretch">
+        <div style="font-weight:900;font-size:13px">@${esc(r.reporterName)} → @${esc(r.reportedUser)}</div>
+        <div class="small" style="color:var(--red)">${esc(r.reason)}: ${esc(r.detail || '-')}</div>
+        ${r.evidence ? `<img src="${esc(r.evidence)}" class="evid" alt="" data-act="openUrl" data-url="${esc(r.evidence)}"/>` : ''}
+        <div class="small">Status: ${esc(r.status)} · ${dateStr(r.createdAt)}</div>
+        <div style="display:flex;gap:4px;margin-top:6px">
+          <button class="btn small green" data-act="resolveReport" data-id="${r.id}" data-status="resolved">SELESAI</button>
+          <button class="btn small danger" data-act="resolveReport" data-id="${r.id}" data-status="rejected">TOLAK</button>
+        </div></div>`;
+    }).join('') : '<div class="emptyBox">Tidak ada</div>');
+  } catch (e) { admBody('<div class="emptyBox">Gagal memuat</div>'); }
+};
+ACT.resolveReport = async (id, el) => {
+  try { await updateDoc(doc(db, 'reports', id), { status: el.dataset.status }); toast('Diperbarui'); }
+  catch (e) { toast('Gagal memperbarui'); }
+  ACT.adminReports();
+};
+ACT.adminGroups = async () => {
+  adminOpen('KELOLA GRUP');
+  try {
+    const snap = await getDocs(query(collection(db, 'groups'), limit(100)));
+    admBody(snap.docs.map(d => {
+      const g = { id: d.id, ...d.data() };
+      return `<div class="menuItem"><span class="em" style="background:var(--green);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg></span><div class="lbl">${esc(g.name)}<div class="sub">${(g.members || []).length} anggota · @${esc(g.ownerName || '')}</div></div><button class="btn small danger" data-act="adminDelGroup" data-id="${g.id}" aria-label="Hapus"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-trash"/></svg></button></div>`;
+    }).join('') || '<div class="emptyBox">Tidak ada</div>');
+  } catch (e) { admBody('<div class="emptyBox">Gagal memuat</div>'); }
+};
+ACT.adminDelGroup = async id => {
+  if (!confirm('Hapus grup ini?')) return;
+  try { await deleteDoc(doc(db, 'groups', id)); toast('Dihapus'); } catch (e) { toast('Gagal menghapus'); }
+  ACT.adminGroups();
+};
+ACT.adminChannels = async () => {
+  adminOpen('KELOLA SALURAN');
+  try {
+    const snap = await getDocs(query(collection(db, 'channels'), limit(100)));
+    admBody(snap.docs.map(d => {
+      const c = { id: d.id, ...d.data() };
+      return `<div class="menuItem"><span class="em" style="background:var(--pink);color:#fff"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-megaphone"/></svg></span><div class="lbl">${esc(c.name)}<div class="sub">${(c.members || []).length} anggota</div></div><button class="btn small danger" data-act="adminDelChannel" data-id="${c.id}" aria-label="Hapus"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-trash"/></svg></button></div>`;
+    }).join('') || '<div class="emptyBox">Tidak ada</div>');
+  } catch (e) { admBody('<div class="emptyBox">Gagal memuat</div>'); }
+};
+ACT.adminDelChannel = async id => {
+  if (!confirm('Hapus saluran ini?')) return;
+  try { await deleteDoc(doc(db, 'channels', id)); toast('Dihapus'); } catch (e) { toast('Gagal menghapus'); }
+  ACT.adminChannels();
+};
+ACT.adminUsers = async () => {
+  adminOpen('PENGGUNA');
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), limit(100)));
+    admBody(snap.docs.map(d => { const u = { uid: d.id, ...d.data() }; return `<div class="listItem">${avHTML(u, 'sm')}<div class="info"><div class="name">${esc(u.displayName || u.username)} ${badgeHTML(u)}</div><div class="last">@${esc(u.username)}</div></div></div>`; }).join('') || '<div class="emptyBox">Tidak ada</div>');
+  } catch (e) { admBody('<div class="emptyBox">Gagal memuat</div>'); }
+};
+ACT.adminVerify = async () => {
+  adminOpen('VERIFIKASI');
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('verifyRequest.status', '==', 'pending'), limit(50)));
+    admBody(snap.docs.map(d => {
+      const u = { uid: d.id, ...d.data() };
+      return `<div class="menuItem" style="flex-direction:column;align-items:stretch">
+        <div style="font-weight:900">${esc(u.displayName || u.username)} <span class="small">@${esc(u.username)}</span></div>
+        <div class="small" style="margin:4px 0">${esc((u.verifyRequest && u.verifyRequest.reason) || '-')}</div>
+        <div style="display:flex;gap:6px"><button class="btn small green" data-act="approveVerify" data-id="${u.uid}" data-ok="1" aria-label="Setujui"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></button><button class="btn small danger" data-act="approveVerify" data-id="${u.uid}" data-ok="0" aria-label="Tolak"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button></div></div>`;
+    }).join('') || '<div class="emptyBox">Tidak ada</div>');
+  } catch (e) { admBody('<div class="emptyBox">Gagal memuat</div>'); }
+};
+ACT.approveVerify = async (uid, el) => {
+  const ok = el.dataset.ok === '1';
+  try { await updateDoc(doc(db, 'users', uid), { verified: ok, verifyRequest: null }); toast(ok ? 'Disetujui' : 'Ditolak'); }
+  catch (e) { toast('Gagal'); }
+  S.userCache.delete(uid);
+  ACT.adminVerify();
+};
+ACT.adminBroadcast = () => {
+  openModal(`<h3>BROADCAST</h3><textarea id="bcMsg" rows="3" placeholder="Pesan..."></textarea><div class="actions"><button class="btn ghost" data-act="close">Batal</button><button class="btn pink" id="bcOk">KIRIM</button></div>`);
+  $('bcOk').onclick = async () => {
+    const m = $('bcMsg').value.trim();
+    if (!m) return;
+    try { await addDoc(collection(db, 'broadcasts'), { text: m, by: S.userData.username, createdAt: serverTimestamp() }); toast('Terkirim'); }
+    catch (e) { toast('Gagal mengirim'); }
+    closeModal();
+  };
+};
+ACT.adminStats = async () => {
+  adminOpen('STATISTIK');
+  const items = [
+    ['Pengguna', collection(db, 'users')],
+    ['Story', collection(db, 'stories')],
+    ['Saluran', collection(db, 'channels')],
+    ['Grup', collection(db, 'groups')],
+    ['Laporan', collection(db, 'reports')],
+    ['Live aktif', query(collection(db, 'lives'), where('active', '==', true))]
+  ];
+  const counts = await Promise.all(items.map(([, q]) => getCountFromServer(q).then(s => s.data().count).catch(() => '-')));
+  admBody(items.map(([label], i) => `<div class="statRow"><span class="lbl">${label}</span><span class="val">${counts[i]}</span></div>`).join(''));
+};
+
+/* ===== LIVE ===== */
+function renderLives() {
+  $('liveList').innerHTML = S.allLives.length
+    ? S.allLives.map(l => `<div class="channelCard" data-act="joinLive" data-id="${esc(l.id)}"><div class="name"><span class="dot"></span>${esc(l.hostName)}</div><div class="desc">${l.viewers || 0} penonton</div></div>`).join('')
+    : '<div class="emptyBox">Tidak ada live</div>';
+}
+function loadLives() {
+  if (S.unsubLive) S.unsubLive();
+  S.unsubLive = onSnapshot(query(collection(db, 'lives'), where('active', '==', true), limit(30)),
+    snap => { S.allLives = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderLives(); },
+    () => {});
+}
+function liveReset() { S.live = liveFresh(); }
+async function startLive() {
+  if (S.live.roomId) return toast('Kamu sedang live atau menonton');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast('Kamera tidak didukung');
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true }); }
+  catch (e) { return toast('Izin kamera/mikrofon ditolak'); }
+  try {
+    const lr = await addDoc(collection(db, 'lives'), { hostId: S.user.uid, hostName: S.userData.displayName || S.userData.username, active: true, viewers: 0, startedAt: serverTimestamp() });
+    Object.assign(S.live, { stream, active: true, roomId: lr.id, startTime: Date.now(), micOn: true, camOn: true, facing: 'user' });
+    $('liveVideo').srcObject = stream; $('liveVideo').muted = true;
+    $('liveChat').innerHTML = '';
+    $('liveView').classList.add('open');
+    liveTimer();
+    listenLiveRoom(lr.id, true);
+  } catch (e) { stream.getTracks().forEach(t => t.stop()); toast('Gagal memulai live'); }
+}
+async function joinLive(id) {
+  const l = await getDocData('lives', id);
+  if (!l || !l.active) return toast('Live sudah selesai');
+  if (l.hostId === S.user.uid) return toast('Ini live kamu');
+  if (S.live.roomId) return toast('Kamu sedang live atau menonton');
+  liveReset();
+  Object.assign(S.live, { roomId: id, joined: true });
+  $('liveVideo').srcObject = null;
+  $('liveVideo').poster = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" x="50" text-anchor="middle" font-size="12" fill="white">MENONTON LIVE</text></svg>';
+  $('liveChat').innerHTML = '';
+  $('liveView').classList.add('open');
+  listenLiveRoom(id, false);
+  updateDoc(doc(db, 'lives', id), { viewers: increment(1) }).catch(() => {});
+}
+ACT.joinLive = id => joinLive(id);
+$('btnJoinLive').onclick = () => { const l = S.allLives[0]; if (!l) return toast('Tidak ada live'); joinLive(l.id); };
+$('btnStartLive').onclick = () => startLive();
+$('btnLiveQuick').onclick = () => startLive();
+function listenLiveRoom(roomId, isHost) {
+  stopLiveListeners();
+  S.live.unsubs = [
+    onSnapshot(query(collection(db, 'lives', roomId, 'comments'), orderBy('createdAt', 'desc'), limit(40)), snap => {
+      const box = $('liveChat');
+      box.innerHTML = snap.docs.map(d => d.data()).reverse().map(m => `<div class="cm"><b>${esc(m.name)}</b>${esc(m.text)}</div>`).join('');
+      box.scrollTop = box.scrollHeight;
+    }, () => {}),
+    onSnapshot(doc(db, 'lives', roomId), d => {
+      const l = d.data();
+      if (!l) return;
+      $('liveViewers').textContent = (l.viewers || 0) + ' penonton';
+      if (!l.active && !isHost) { toast('Live telah berakhir'); closeLive(); }
+    }, () => {})
+  ];
+}
+function stopLiveListeners() { (S.live.unsubs || []).forEach(u => u()); S.live.unsubs = []; }
+function liveTimer() {
+  clearInterval(S.live.timer);
+  S.live.timer = setInterval(() => {
+    const s = Math.floor((Date.now() - S.live.startTime) / 1000);
+    $('liveTimer').textContent = pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+  }, 1000);
+}
+async function closeLive() {
+  stopLiveListeners();
+  clearInterval(S.live.timer);
+  if (S.live.stream) S.live.stream.getTracks().forEach(t => t.stop());
+  const { roomId, active, joined } = S.live;
+  if (roomId) {
+    if (active) await updateDoc(doc(db, 'lives', roomId), { active: false }).catch(() => {});
+    else if (joined) await updateDoc(doc(db, 'lives', roomId), { viewers: increment(-1) }).catch(() => {});
+  }
+  liveReset();
+  $('liveVideo').srcObject = null; $('liveVideo').poster = '';
+  $('liveChat').innerHTML = '';
+  $('liveView').classList.remove('open');
+}
+$('btnCloseLive').onclick = () => closeLive();
+$('btnMuteMic').onclick = () => {
+  S.live.micOn = !S.live.micOn;
+  if (S.live.stream) S.live.stream.getAudioTracks().forEach(t => t.enabled = S.live.micOn);
+  $('btnMuteMic').classList.toggle('on', !S.live.micOn);
+};
+$('btnMuteCam').onclick = () => {
+  S.live.camOn = !S.live.camOn;
+  if (S.live.stream) S.live.stream.getVideoTracks().forEach(t => t.enabled = S.live.camOn);
+  $('btnMuteCam').classList.toggle('on', !S.live.camOn);
+};
+$('btnFlipCam').onclick = async () => {
+  const s = S.live.stream;
+  if (!s) return;
+  S.live.facing = S.live.facing === 'user' ? 'environment' : 'user';
+  try {
+    const ns = await navigator.mediaDevices.getUserMedia({ video: { facingMode: S.live.facing } });
+    const nt = ns.getVideoTracks()[0];
+    s.getVideoTracks().forEach(t => { t.stop(); s.removeTrack(t); });
+    s.addTrack(nt);
+    const fresh = new MediaStream(s.getTracks());
+    S.live.stream = fresh;
+    $('liveVideo').srcObject = fresh;
+  } catch (e) { toast('Gagal ganti kamera'); }
+};
+async function sendLiveComment() {
+  const t = $('liveInput').value.trim();
+  if (!t || !S.live.roomId) return;
+  $('liveInput').value = '';
+  await addDoc(collection(db, 'lives', S.live.roomId, 'comments'), { uid: S.user.uid, name: S.userData.displayName || S.userData.username, text: t, createdAt: serverTimestamp() })
+    .catch(() => toast('Gagal mengirim komentar'));
+}
+$('btnSendLive').onclick = () => sendLiveComment();
+$('liveInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendLiveComment(); });
+
+/* ===== GAME: TIC-TAC-TOE ===== */
+const WIN_LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+function checkWinner(b) {
+  for (const [a, c, d] of WIN_LINES) if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a];
+  return b.every(v => v) ? 'draw' : null;
+}
+function getWinLine(b) {
+  for (const l of WIN_LINES) if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return l;
+  return [];
+}
+$('btnFindGame').onclick = async () => {
+  const b = $('btnFindGame');
+  b.disabled = true; b.textContent = 'MENCARI...';
+  try {
+    const snap = await getDocs(query(collection(db, 'games'), where('status', '==', 'waiting'), limit(1)));
+    let roomId, symbol;
+    if (!snap.empty && snap.docs[0].data().player1 !== S.user.uid) {
+      roomId = snap.docs[0].id; symbol = 'O';
+      await updateDoc(doc(db, 'games', roomId), { status: 'playing', player2: S.user.uid, player2Name: S.userData.username });
+    } else if (!snap.empty) {
+      roomId = snap.docs[0].id; symbol = 'X';
+    } else {
+      const r = await addDoc(collection(db, 'games'), { status: 'waiting', board: Array(9).fill(''), turn: 'X', player1: S.user.uid, player1Name: S.userData.username, player2: null, player2Name: null, createdAt: serverTimestamp() });
+      roomId = r.id; symbol = 'X';
+    }
+    S.gameRoomId = roomId; S.gameSymbol = symbol;
+    $('gameContainer').classList.remove('hidden');
+    if (S.unsubGame) S.unsubGame();
+    S.unsubGame = onSnapshot(doc(db, 'games', roomId), d => { if (d.exists()) renderGame(d.data()); });
+  } catch (e) { toast('Gagal mencari lawan'); }
+  b.disabled = false; b.textContent = 'TIC-TAC-TOE';
+};
+function renderGame(g) {
+  const board = g.board || Array(9).fill('');
+  const winner = checkWinner(board);
+  const win = winner && winner !== 'draw' ? getWinLine(board) : [];
+  $('gameBoard').innerHTML = board.map((v, i) => `<div class="cell${win.includes(i) ? ' win' : ''}" data-i="${i}">${v}</div>`).join('');
+  $('gameStatus').textContent = winner ? (winner === 'draw' ? 'SERI' : `${winner} MENANG`) : (g.turn === S.gameSymbol ? 'GILIRANMU' : `GILIRAN ${g.turn}`);
+  if (winner) return;
+  $('gameBoard').querySelectorAll('.cell').forEach(c => c.onclick = async () => {
+    if (g.turn !== S.gameSymbol) return toast('Bukan giliranmu');
+    const i = +c.dataset.i;
+    if (board[i]) return;
+    board[i] = S.gameSymbol;
+    await updateDoc(doc(db, 'games', S.gameRoomId), { board, turn: S.gameSymbol === 'X' ? 'O' : 'X' }).catch(() => toast('Gagal mengirim langkah'));
+  });
+}
+$('btnLeaveGame').onclick = async () => {
+  if (S.gameRoomId) await updateDoc(doc(db, 'games', S.gameRoomId), { status: 'finished' }).catch(() => {});
+  if (S.unsubGame) S.unsubGame();
+  S.unsubGame = null; S.gameRoomId = null;
+  $('gameContainer').classList.add('hidden');
+};
+
+/* ===== GAME: ULAR ===== */
+$('btnOpenSnake').onclick = () => {
+  $('snakeModal').classList.add('open');
+  $('snakeMenu').classList.remove('hidden');
+  $('snakeGameArea').classList.add('hidden');
+};
+$('btnPlaySnakeSolo').onclick = () => snakeStart();
+$('btnFindSnakeMatch').onclick = () => snakeStart();
+$('btnQuitSnake').onclick = () => closeSnake();
+function snakeStart() {
+  snakeStop();
+  SN.st = { snake: [{ x: 10, y: 10 }], dir: 'right', next: 'right', food: { x: 15, y: 10 }, score: 0 };
+  $('snakeMenu').classList.add('hidden');
+  $('snakeGameArea').classList.remove('hidden');
+  $('snakeScore').textContent = 'Skor: 0';
+  const ctx = $('snakeCanvas').getContext('2d');
+  SN.timer = setInterval(() => snakeTick(ctx), 120);
+}
+function snakeTick(ctx) {
+  const st = SN.st;
+  if (!st) return;
+  st.dir = st.next;
+  const h = { ...st.snake[0] };
+  if (st.dir === 'right') h.x++; else if (st.dir === 'left') h.x--; else if (st.dir === 'up') h.y--; else h.y++;
+  const N = SN.size, cs = SN.cs;
+  if (h.x < 0 || h.y < 0 || h.x >= N || h.y >= N || st.snake.some(s => s.x === h.x && s.y === h.y)) {
+    const score = st.score;
+    snakeStop();
+    toast('Game over! Skor: ' + score);
+    setTimeout(closeSnake, 1200);
+    return;
+  }
+  st.snake.unshift(h);
+  if (h.x === st.food.x && h.y === st.food.y) {
+    st.score++;
+    $('snakeScore').textContent = 'Skor: ' + st.score;
+    st.food = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) };
+  } else st.snake.pop();
+  ctx.fillStyle = '#0A0A0A'; ctx.fillRect(0, 0, 300, 300);
+  ctx.fillStyle = '#EF4444'; ctx.fillRect(st.food.x * cs, st.food.y * cs, cs - 1, cs - 1);
+  st.snake.forEach((s, i) => { ctx.fillStyle = i === 0 ? '#8B5CF6' : '#22D3EE'; ctx.fillRect(s.x * cs, s.y * cs, cs - 1, cs - 1); });
+}
+function snakeStop() { clearInterval(SN.timer); SN.timer = null; SN.st = null; }
+function closeSnake() { snakeStop(); $('snakeModal').classList.remove('open'); }
+function snakeTurn(d) {
+  const st = SN.st;
+  if (!st) return;
+  const opp = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  if (d !== opp[st.dir]) st.next = d;
+}
+ACT.snakeDir = d => snakeTurn(d);
+document.addEventListener('keydown', e => {
+  const d = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
+  if (d && SN.st) { e.preventDefault(); snakeTurn(d); }
+});
+
+/* ===== MUSIK: iTunes lalu Deezer (JSONP). Panel dan pemutar bisa digeser ke mana saja. ===== */
+const audio = $('audioEl');
+const MUSIC = { items: [], seq: 0 };
+audio.addEventListener('timeupdate', () => { if (audio.duration) $('mpFill').style.width = (audio.currentTime / audio.duration * 100) + '%'; });
+audio.addEventListener('ended', () => { audio.currentTime = 0; audio.play().catch(() => {}); });
+function setPlaying(on) {
+  S.music.playing = on;
+  $('mpPlayPause').innerHTML = svgIcon(on ? 'pause' : 'play');
+  $('musicFab').classList.toggle('spinning', on);
+}
+$('mpPlayPause').onclick = e => {
+  e.stopPropagation();
+  if (!audio.getAttribute('src')) return;
+  if (S.music.playing) { audio.pause(); setPlaying(false); }
+  else audio.play().then(() => setPlaying(true)).catch(() => toast('Tidak bisa memutar'));
+};
+$('mpClose').onclick = e => { e.stopPropagation(); musicStop(); };
+function musicStop() {
+  audio.pause(); audio.removeAttribute('src'); audio.load();
+  setPlaying(false);
+  $('musicPlayer').classList.remove('show');
+}
+
+/* Posisi elemen mengambang: disimpan per elemen, dijepit ke layar saat digeser atau layar berubah ukuran */
+const POS_KEY = k => 'xz_pos_' + k;
+function clampPos(el, l, t) {
+  return {
+    l: Math.max(4, Math.min(innerWidth - el.offsetWidth - 4, l)),
+    t: Math.max(4, Math.min(innerHeight - el.offsetHeight - 4, t))
+  };
+}
+function applyPos(el, p) {
+  el.style.left = p.l + 'px'; el.style.top = p.t + 'px';
+  el.style.right = 'auto'; el.style.bottom = 'auto'; el.style.transform = 'none';
+}
+function placeFloat(el, key, fallback) {
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(POS_KEY(key)) || 'null'); } catch (e) { p = null; }
+  if (!p || typeof p.l !== 'number' || typeof p.t !== 'number') p = fallback();
+  applyPos(el, clampPos(el, p.l, p.t));
+}
+function savePos(el, key) {
+  try { localStorage.setItem(POS_KEY(key), JSON.stringify({ l: parseInt(el.style.left, 10) || 0, t: parseInt(el.style.top, 10) || 0 })); }
+  catch (e) { /* penyimpanan diblokir: posisi hanya berlaku sampai halaman ditutup */ }
+}
+function makeDraggable(el, handle, key, skip) {
+  let st = null;
+  handle.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (skip && e.target.closest(skip)) return;
+    const r = el.getBoundingClientRect();
+    st = { id: e.pointerId, x: e.clientX, y: e.clientY, l: r.left, t: r.top, moved: false };
+    // Tangkap pointer sejak awal: gerakan tetap terbaca walau kursor/jari keluar dari kepala panel
+    try { handle.setPointerCapture(e.pointerId); } catch (err) { /* abaikan */ }
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!st || e.pointerId !== st.id) return;
+    const dx = e.clientX - st.x, dy = e.clientY - st.y;
+    if (!st.moved) {
+      if (Math.hypot(dx, dy) < 6) return; // gerak kecil tetap dianggap ketukan biasa
+      st.moved = true;
+      el.classList.add('dragging');
+    }
+    applyPos(el, clampPos(el, st.l + dx, st.t + dy));
+  });
+  const end = e => {
+    if (!st || (e && e.pointerId !== st.id)) return;
+    const moved = st.moved;
+    st = null;
+    el.classList.remove('dragging');
+    if (moved) {
+      savePos(el, key);
+      el.dataset.dragged = '1';
+      setTimeout(() => { delete el.dataset.dragged; }, 80);
+    }
+  };
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
+  // Klik yang ikut terpicu setelah digeser dibatalkan
+  handle.addEventListener('click', e => { if (el.dataset.dragged) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+}
+function toggleMusicPanel(force) {
+  const p = $('musicPanel');
+  const open = typeof force === 'boolean' ? force : p.classList.contains('hidden');
+  p.classList.toggle('hidden', !open);
+  if (!open) return;
+  placeFloat(p, 'panel', () => ({ l: innerWidth - p.offsetWidth - 12, t: 72 }));
+  setTimeout(() => $('musicQ').focus({ preventScroll: true }), 60);
+}
+$('musicFab').addEventListener('click', () => { if (!$('musicFab').dataset.dragged) toggleMusicPanel(); });
+$('musicFab').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMusicPanel(); } });
+$('musicPanelClose').onclick = () => toggleMusicPanel(false);
+$('musicGo').onclick = () => searchMusic($('musicQ').value);
+$('musicTop').onclick = () => { $('musicQ').value = ''; searchMusic('top hits'); };
+$('musicQ').addEventListener('keydown', e => { if (e.key === 'Enter') searchMusic(e.target.value); });
+makeDraggable($('musicFab'), $('musicFab'), 'fab');
+makeDraggable($('musicPlayer'), $('musicPlayer'), 'mini', 'button');
+makeDraggable($('musicPanel'), $('musicPanelHead'), 'panel', 'button');
+window.addEventListener('resize', () => {
+  ['musicFab', 'musicPlayer', 'musicPanel'].forEach(id => {
+    const el = $(id);
+    if (el.style.left && el.getClientRects().length) applyPos(el, clampPos(el, parseInt(el.style.left, 10), parseInt(el.style.top, 10)));
+  });
+});
+
+function cssUrl(u) { return /^https:\/\/[^\s"'()\\]+$/.test(u || '') ? `url("${u}")` : ''; }
+function showMiniPlayer() {
+  const el = $('musicPlayer');
+  el.classList.add('show');
+  placeFloat(el, 'mini', () => ({ l: (innerWidth - el.offsetWidth) / 2, t: innerHeight - el.offsetHeight - 160 }));
+}
+function playMusic(t) {
+  if (!t || !t.preview) return;
+  audio.src = t.preview; audio.currentTime = 0;
+  S.music.current = t;
+  $('mpCover').style.backgroundImage = cssUrl(t.cover);
+  $('mpTitle').textContent = t.title; $('mpArtist').textContent = t.artist;
+  if (S.settings.musicPopup) showMiniPlayer();
+  audio.play().then(() => setPlaying(true)).catch(() => { setPlaying(false); toast('Tidak bisa memutar lagu ini'); });
+  toast('Memutar: ' + t.title);
+}
+ACT.playTrack = id => playMusic(MUSIC.items[Number(id)]);
+ACT.musicRetry = () => searchMusic($('musicQ').value);
+
+/* Sumber pencarian: iTunes (CORS terbuka) lalu Deezer (JSONP). Tanpa proxy pihak ketiga. */
+function fetchJSON(url, ms) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  return fetch(url, { signal: ctl.signal })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .finally(() => clearTimeout(timer));
+}
+function jsonp(url, ms) {
+  return new Promise((resolve, reject) => {
+    const name = '__xzjsonp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const s = document.createElement('script');
+    let timer = 0;
+    const finish = () => { clearTimeout(timer); delete window[name]; s.remove(); };
+    timer = setTimeout(() => { finish(); reject(new Error('timeout')); }, ms);
+    window[name] = d => { finish(); resolve(d); };
+    s.onerror = () => { finish(); reject(new Error('jsonp')); };
+    s.src = url + (url.includes('?') ? '&' : '?') + 'output=jsonp&callback=' + name;
+    document.head.appendChild(s);
+  });
+}
+async function musicFromItunes(q) {
+  const d = await fetchJSON('https://itunes.apple.com/search?media=music&entity=song&limit=25&term=' + encodeURIComponent(q), 7000);
+  return (d.results || []).filter(t => t.previewUrl).map(t => ({
+    title: t.trackName || 'Tanpa judul', artist: t.artistName || '',
+    cover: (t.artworkUrl100 || '').replace('100x100bb', '300x300bb'), preview: t.previewUrl
+  }));
+}
+async function musicFromDeezer(q) {
+  const d = await jsonp('https://api.deezer.com/search?limit=25&q=' + encodeURIComponent(q), 7000);
+  return (d.data || []).filter(t => t.preview).map(t => ({
+    title: t.title || 'Tanpa judul', artist: (t.artist && t.artist.name) || '',
+    cover: (t.album && t.album.cover_medium) || '', preview: t.preview
+  }));
+}
+function musicRow(t, i) {
+  return `<div class="musicItem" data-act="playTrack" data-id="${i}">`
+    + (t.cover ? `<img src="${esc(t.cover)}" alt="" loading="lazy" decoding="async"/>` : `<div class="musicCover">${svgIcon('music')}</div>`)
+    + `<div class="info"><div class="t">${esc(t.title)}</div><div class="a">${esc(t.artist)}</div></div>`
+    + `<div class="musicPlay">${svgIcon('play')}</div></div>`;
+}
+// Sampul yang gagal dimuat diganti kotak ikon, bukan ikon gambar rusak
+$('musicList').addEventListener('error', e => {
+  const im = e.target;
+  if (!(im instanceof HTMLImageElement)) return;
+  const box = document.createElement('div');
+  box.className = 'musicCover';
+  box.innerHTML = svgIcon('music');
+  im.replaceWith(box);
+}, true);
+async function searchMusic(raw) {
+  const q = String(raw || '').trim();
+  if (q.length < 2) return toast('Min 2 karakter');
+  const box = $('musicList'), seq = ++MUSIC.seq;
+  box.innerHTML = spinnerHTML;
+  const gagal = [];
+  let list = [];
+  try { list = await musicFromItunes(q); } catch (e) { gagal.push('iTunes'); }
+  if (!list.length) { try { list = await musicFromDeezer(q); } catch (e) { gagal.push('Deezer'); } }
+  if (seq !== MUSIC.seq) return; // hasil pencarian yang sudah usang dibuang
+  MUSIC.items = list;
+  if (list.length) box.innerHTML = list.map(musicRow).join('');
+  else if (gagal.length) box.innerHTML = `<div class="emptyBox">Pencarian gagal: ${gagal.join(' & ')} tidak bisa dihubungi. Cek koneksi lalu coba lagi.</div><div style="text-align:center"><button class="btn small" data-act="musicRetry">COBA LAGI</button></div>`;
+  else box.innerHTML = '<div class="emptyBox">Lagu tidak ditemukan. Coba kata kunci lain.</div>';
+}
+
+/* ===== PENUTUP ===== */
+window.addEventListener('beforeunload', () => {
+  setPresence(false);
+  if (S.live.stream) S.live.stream.getTracks().forEach(t => t.stop());
+});
+console.log('VEXZANO Chat v3.0 loaded');
+</script>
+</body>
+</html>
+
