@@ -54,7 +54,7 @@ function show() {
   else { body.style.background = it.bg || BG[0]; body.textContent = it.text; }
   vt = setTimeout(() => { vIdx++; show(); }, 5000);
 }
-function closeViewer() { clearTimeout(vt); $('viewer').hidden = true; render(); }
+function closeViewer() { clearTimeout(vt); $('viewer').hidden = true; if (S.me) render(); }
 
 /* ---- tambah status ---- */
 function openAdd() { $('astSheet').hidden = false; sfx('open'); }

@@ -134,7 +134,7 @@ async function heal(user) { // profil hilang (pendaftaran sebelumnya gagal di te
 }
 initAuth(); initChat(); bindStatus(); initProfile(async () => { await setPresence(false); teardown(); });
 onAuthStateChanged(auth, async user => {
-  if (!user) { localStorage.removeItem(CK); teardown(); showAuth(); return; }
+  if (!user) { showAuth(); localStorage.removeItem(CK); try { teardown(); } catch (e) { console.warn(e); } return; }
   const c = JSON.parse(localStorage.getItem(CK) || 'null'), fromCache = c?.id === user.uid;
   if (fromCache) { S.me = c; S.cache.set(c.id, c); start(); }       // langsung masuk tanpa halaman login
   let snap = null;
