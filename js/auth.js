@@ -1,6 +1,6 @@
 // Login / Register + captcha matematika (client-side) + pembuatan profil
 import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, getDoc, writeBatch, serverTimestamp } from './firebase.js';
-const $ = id => document.getElementById(id);
+import { $, toast } from './ui.js';
 let mode = 'login', answer = 0;
 const MSG = {
   'auth/invalid-credential': 'Email atau password salah.',
@@ -10,10 +10,6 @@ const MSG = {
   'auth/network-request-failed': 'Tidak ada koneksi internet.',
   'auth/too-many-requests': 'Terlalu banyak percobaan, coba lagi nanti.'
 };
-export function toast(msg, kind = 'err') {
-  const t = $('toast'); t.textContent = msg; t.className = 'show ' + kind;
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.className = '', 3500);
-}
 function newCaptcha() {
   const a = 1 + Math.floor(Math.random() * 9), b = 1 + Math.floor(Math.random() * 9);
   answer = a + b; $('capQ').textContent = `${a} + ${b} = ?`; $('capA').value = '';
@@ -34,9 +30,9 @@ async function register(email, pw) {
   if ((await getDoc(doc(db, 'usernames', low))).exists()) throw new Error('Username sudah dipakai.');
   const { user } = await createUserWithEmailAndPassword(auth, email, pw);
   const b = writeBatch(db);
-  b.set(doc(db, 'usernames', low), { uid: user.uid });               // kunci keunikan username
-  b.set(doc(db, 'users', user.uid), { username: name, usernameLower: low, bio: '', photoURL: 'default', isOnline: true, lastSeen: serverTimestamp(), createdAt: serverTimestamp() }); // profil publik
-  b.set(doc(db, 'users_private', user.uid), { email });              // email hanya terbaca pemiliknya
+  b.set(doc(db, 'usernames', low), { uid: user.uid });
+  b.set(doc(db, 'users', user.uid), { username: name, usernameLower: low, bio: '', photoURL: 'default', isOnline: true, lastSeen: serverTimestamp(), createdAt: serverTimestamp() });
+  b.set(doc(db, 'users_private', user.uid), { email });
   await b.commit();
 }
 export function initAuth() {
@@ -47,11 +43,9 @@ export function initAuth() {
     const btn = $('authSubmit'); btn.disabled = true;
     try {
       const email = $('aEmail').value.trim(), pw = $('aPass').value;
-      if (mode === 'login') await signInWithEmailAndPassword(auth, email, pw);
-      else await register(email, pw);
-    } catch (err) {
-      toast(err.code ? (MSG[err.code] || 'Terjadi kesalahan: ' + err.code) : err.message);
-    } finally { btn.disabled = false; }
+      if (mode === 'login') await signInWithEmailAndPassword(auth, email, pw); else await register(email, pw);
+    } catch (err) { toast(err.code ? (MSG[err.code] || 'Terjadi kesalahan: ' + err.code) : err.message); }
+    finally { btn.disabled = false; }
   };
   setMode('login');
 }
