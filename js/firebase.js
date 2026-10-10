@@ -1,6 +1,6 @@
 // Inisialisasi Firebase (SDK 13.0.0 lewat CDN) + ekspor fungsi Auth, Firestore, Storage
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-storage.js";
 export * from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
@@ -18,6 +18,7 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch(() => {}); // tetap login walau aplikasi ditutup
 export const storage = getStorage(app);
 // Cache offline bawaan Firestore (pesan teks tertunda terkirim otomatis saat online)
 export const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });

@@ -1,5 +1,5 @@
 // Inti aplikasi: siklus login, navigasi, beranda, kontak otomatis, grup, PWA
-import { auth, db, onAuthStateChanged, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, orderBy, limit, startAfter, onSnapshot, serverTimestamp } from './firebase.js';
+import { auth, db, onAuthStateChanged, doc, getDoc, writeBatch, getDocs, setDoc, updateDoc, collection, query, where, orderBy, limit, startAfter, onSnapshot, serverTimestamp } from './firebase.js';
 import { $, h, S, avatar, toast, wipe, fmt, getUser, other, ico } from './ui.js';
 import { sfx } from './sfx.js';
 import { initAuth } from './auth.js';
@@ -12,13 +12,10 @@ const lastSeen = new Map();
 const setPresence = v => S.me && updateDoc(doc(db, 'users', S.me.id), { isOnline: v, lastSeen: serverTimestamp() }).catch(() => {});
 
 /* ---------- navigasi (dengan wipe + suara) ---------- */
-function go(v, instant) {
-  const apply = () => {
-    document.querySelectorAll('.view').forEach(e => e.classList.toggle('on', e.id === 'v-' + v));
-    document.querySelectorAll('.ni').forEach(e => e.classList.toggle('on', e.dataset.v === v));
-    if (v === 'home') { anim = true; renderHome(); }
-  };
-  if (instant || v === view) apply(); else { wipe(); sfx('nav'); setTimeout(apply, 240); }
+function go(v) {
+  document.querySelectorAll('.view').forEach(e => e.classList.toggle('on', e.id === 'v-' + v));
+  document.querySelectorAll('.ni').forEach(e => e.classList.toggle('on', e.dataset.v === v));
+  if (v === 'home') { anim = false; renderHome(); }
   view = v;
 }
 document.querySelectorAll('.ni').forEach(b => b.onclick = () => go(b.dataset.v));
@@ -113,23 +110,42 @@ function renderHome() {
 }
 window.addEventListener('profile-changed', () => { renderHome(); renderSheet(); });
 
-/* ---------- siklus hidup ---------- */
+/* ---------- siklus hidup (sesi login tersimpan) ---------- */
+const CK = 'dixzMe'; let started = false;
+const showApp = () => { $('boot').hidden = true; $('auth').hidden = true; $('app').hidden = false; };
+const showAuth = () => { $('boot').hidden = true; $('app').hidden = true; $('auth').hidden = false; };
+const slim = u => ({ id: u.id, username: u.username, usernameLower: u.usernameLower, bio: u.bio || '', photoURL: u.photoURL || 'default' });
 function teardown() {
-  unsubChats?.(); unsubChats = null; stopStatus(); closeRoom();
+  unsubChats?.(); unsubChats = null; stopStatus(); closeRoom(); started = false;
   S.me = null; S.chats = []; S.contacts = []; S.cache.clear(); lastSeen.clear();
   ['sheet', 'gsheet', 'astSheet', 'attach', 'msgMenu'].forEach(id => $(id).hidden = true);
 }
+function start() {
+  if (started) return; started = true; showApp();
+  setPresence(true); fillSettings(); listenChats(); loadContacts(true); startStatus(); go('home');
+}
+async function heal(user) { // profil hilang (pendaftaran sebelumnya gagal di tengah jalan): buat otomatis
+  const base = ((user.email || 'user').split('@')[0].replace(/[^A-Za-z0-9_]/g, '') || 'user').slice(0, 14);
+  const name = base + Math.floor(100 + Math.random() * 900), low = name.toLowerCase(), b = writeBatch(db);
+  b.set(doc(db, 'usernames', low), { uid: user.uid });
+  b.set(doc(db, 'users', user.uid), { username: name, usernameLower: low, bio: '', photoURL: 'default', isOnline: true, lastSeen: serverTimestamp(), createdAt: serverTimestamp() });
+  b.set(doc(db, 'users_private', user.uid), { email: user.email || '' });
+  await b.commit(); return getDoc(doc(db, 'users', user.uid));
+}
 initAuth(); initChat(); bindStatus(); initProfile(async () => { await setPresence(false); teardown(); });
 onAuthStateChanged(auth, async user => {
-  if (!user) { teardown(); $('auth').hidden = false; $('app').hidden = true; return; }
-  let snap;
-  try { for (let i = 0; i < 8; i++) { snap = await getDoc(doc(db, 'users', user.uid)); if (snap.exists()) break; await new Promise(r => setTimeout(r, 500)); } }
-  catch (e) { toast('Gagal memuat profil: ' + e.code); }
-  if (!snap?.exists()) return;
-  S.me = { id: user.uid, ...snap.data() }; S.cache.set(S.me.id, S.me);
-  wipe(); sfx('ok');
-  setTimeout(() => { $('auth').hidden = true; $('app').hidden = false; }, 240);
-  setPresence(true); fillSettings(); listenChats(); loadContacts(true); startStatus(); go('home', true);
+  if (!user) { localStorage.removeItem(CK); teardown(); showAuth(); return; }
+  const c = JSON.parse(localStorage.getItem(CK) || 'null'), fromCache = c?.id === user.uid;
+  if (fromCache) { S.me = c; S.cache.set(c.id, c); start(); }       // langsung masuk tanpa halaman login
+  let snap = null;
+  try {
+    for (let i = 0; i < (fromCache ? 1 : 12); i++) { snap = await getDoc(doc(db, 'users', user.uid)); if (snap.exists()) break; await new Promise(r => setTimeout(r, 500)); }
+    if (!snap.exists() && !fromCache) snap = await heal(user);
+  } catch (e) { if (!fromCache) { toast('Gagal memuat profil: ' + e.code); showAuth(); return; } }
+  if (snap?.exists()) {
+    S.me = { id: user.uid, ...snap.data() }; S.cache.set(S.me.id, S.me); localStorage.setItem(CK, JSON.stringify(slim(S.me)));
+    if (!fromCache) { sfx('ok'); start(); } else { fillSettings(); renderHome(); }
+  }
 });
 document.addEventListener('visibilitychange', () => setPresence(!document.hidden));
 addEventListener('pagehide', () => setPresence(false));
