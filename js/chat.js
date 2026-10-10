@@ -2,7 +2,8 @@
 import { db, doc, setDoc, updateDoc, addDoc, collection, query, orderBy, limitToLast, where, limit, getDocs, onSnapshot, serverTimestamp, increment } from './firebase.js';
 import { $, h, S, avatar, toast, fmt, size, dur, ico, getUser } from './ui.js';
 import { sfx } from './sfx.js';
-import { compressImage, upload, removeFile, getLocation, startRecorder } from './media.js';
+import { compressImage, upload, removeFile, getLocation, startRecorder, dHash, bandsOf } from './media.js';
+import { checkReceipt } from './receipt.js';
 
 let cur = null, unsubM = null, unsubC = null, unsubU = null, tInt = null, seen = new Set(), first = true;
 let rec = null, recMode = '', recT = null, held = false, lastTyp = 0, menuCtx = null, playing = null;
@@ -78,7 +79,7 @@ function content(m) {
   }
 }
 function attachMenu(b, id, ref, m, mine) {
-  let t, x, y; const open = () => { menuCtx = { ref, m, mine }; $('mmCopy').hidden = m.type !== 'text' || m.deleted; $('mmDel').hidden = !mine || m.deleted; if ($('mmCopy').hidden && $('mmDel').hidden) return; $('msgMenu').hidden = false; sfx('open'); };
+  let t, x, y; const open = () => { menuCtx = { ref, m, mine }; $('mmCopy').hidden = m.type !== 'text' || m.deleted; $('mmDel').hidden = !mine || m.deleted; $('mmCheck').hidden = m.type !== 'image' || m.deleted; if ($('mmCopy').hidden && $('mmDel').hidden && $('mmCheck').hidden) return; $('msgMenu').hidden = false; sfx('open'); };
   b.addEventListener('pointerdown', e => { x = e.clientX; y = e.clientY; t = setTimeout(open, 450); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => clearTimeout(t)));
   b.addEventListener('pointermove', e => { if (Math.abs(e.clientX - x) > 8 || Math.abs(e.clientY - y) > 8) clearTimeout(t); });
@@ -129,11 +130,14 @@ async function sendMedia(file, kind) {
   const label = kind === 'image' ? 'Foto' : kind === 'video' ? 'Video' : file.name, p = progressBubble('Mengunggah ' + label + '...');
   try {
     await ensureChat();
-    const blob = kind === 'image' ? await compressImage(file) : file;
-    const path = `chats/${cur.id}/${S.me.id}/${Date.now()}_${kind === 'image' ? 'foto.jpg' : safe(file.name)}`;
+    const blob = kind === 'image' ? await compressImage(file) : file, ts = Date.now();
+    const ph = kind === 'image' ? await dHash(file).catch(() => null) : null;
+    const path = `chats/${cur.id}/${S.me.id}/${ts}_${kind === 'image' ? 'foto.jpg' : safe(file.name)}`;
     const up = await upload(path, blob, p.set, blob.type || file.type);
     const msg = { type: kind, mediaUrl: up.url, mediaPath: up.path }; if (kind === 'file') { msg.fileName = file.name; msg.size = file.size; }
+    if (ph) { msg.phash = ph; msg.upTs = ts; }
     await push(msg, kind === 'file' ? 'Dokumen: ' + file.name : label); sfx('send');
+    if (ph) addDoc(collection(db, 'imageHashes'), { hash: ph, bands: bandsOf(ph), sender: S.me.id, ts }).catch(() => {});
   } catch (e) { toast('Gagal mengirim: ' + (e.message || e.code)); } finally { p.done(); }
 }
 async function recStart(mode) {
@@ -196,6 +200,7 @@ export function initChat() {
   ['pointerup', 'pointercancel'].forEach(ev => mic.addEventListener(ev, () => { held = false; if (recMode === 'hold') recEnd(true); }));
   mic.addEventListener('contextmenu', e => e.preventDefault());
   $('rCancel').onclick = () => recEnd(false); $('rSend').onclick = () => recEnd(true);
+  $('mmCheck').onclick = () => { $('msgMenu').hidden = true; checkReceipt(menuCtx.m); };
   $('mmCancel').onclick = () => $('msgMenu').hidden = true;
   $('mmCopy').onclick = () => { navigator.clipboard?.writeText(menuCtx.m.text || ''); $('msgMenu').hidden = true; toast('Teks disalin.', 'ok'); };
   $('mmDel').onclick = async () => {

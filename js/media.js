@@ -38,3 +38,13 @@ export async function startRecorder() {
     cancel() { rec.onstop = stopTracks; try { rec.stop(); } catch { stopTracks(); } }
   };
 }
+
+// Sidik gambar 64-bit (dHash) untuk mendeteksi gambar yang dikirim ulang; dipecah jadi 4 "band" agar bisa dicari
+export async function dHash(file) {
+  const bmp = await createImageBitmap(file), c = document.createElement('canvas'); c.width = 9; c.height = 8;
+  const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(bmp, 0, 0, 9, 8); bmp.close?.();
+  const d = x.getImageData(0, 0, 9, 8).data, g = i => d[i * 4] * .299 + d[i * 4 + 1] * .587 + d[i * 4 + 2] * .114;
+  let bits = ''; for (let r = 0; r < 8; r++) for (let q = 0; q < 8; q++) bits += g(r * 9 + q) > g(r * 9 + q + 1) ? '1' : '0';
+  return bits.match(/.{4}/g).map(b => parseInt(b, 2).toString(16)).join('');
+}
+export const bandsOf = hex => [0, 1, 2, 3].map(i => i + ':' + hex.slice(i * 4, i * 4 + 4));
