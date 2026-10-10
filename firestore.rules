@@ -30,17 +30,15 @@ service cloud.firestore {
         && request.resource.data.participants == resource.data.participants;
       match /messages/{mid} {
         allow read: if signedIn() && chatOk(id);
-        allow create: if signedIn() && request.resource.data.senderId == request.auth.uid
-          && request.auth.uid in get(/databases/$(database)/documents/chats/$(id)).data.participants;
+        allow create: if signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(id)).data.participants
+          && (request.resource.data.senderId == request.auth.uid
+              || (request.resource.data.senderId == 'ai-dixz' && 'ai-dixz' in id.split('_')));   // balasan AI di chat milik sendiri
         // pengirim boleh ubah (hapus-untuk-semua); penerima hanya boleh ubah "status" (diterima/dibaca)
         allow update: if signedIn() && (resource.data.senderId == request.auth.uid
           || (request.auth.uid in get(/databases/$(database)/documents/chats/$(id)).data.participants
               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])));
       }
-    }
-    match /imageHashes/{id} {                  // sidik gambar (deteksi gambar dipakai ulang)
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.sender == request.auth.uid;
     }
     match /statuses/{sid} {
       allow read: if signedIn();
