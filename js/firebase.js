@@ -8,12 +8,12 @@ export * from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 export * from "https://www.gstatic.com/firebasejs/13.0.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDbY3KSq39ac2QYURX31Nf_PmLPY3Mgi8w",
-  authDomain: "vexzano-182d1.firebaseapp.com",
-  projectId: "vexzano-182d1",
-  storageBucket: "vexzano-182d1.firebasestorage.app",
-  messagingSenderId: "743135238453",
-  appId: "1:743135238453:web:fba61f67c91e9aa3ccd47c"
+  apiKey: "AIzaSyD1656fPz0HWe9nTdiBJcrQz6N02njt_jU",
+  authDomain: "whatsapp-4f3df.firebaseapp.com",
+  projectId: "whatsapp-4f3df",
+  storageBucket: "whatsapp-4f3df.firebasestorage.app",
+  messagingSenderId: "622021427143",
+  appId: "1:622021427143:web:62a14c35faf2b92d2563e2"
 };
 
 export const app = initializeApp(firebaseConfig);
