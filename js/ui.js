@@ -4,6 +4,7 @@ import { sfx } from './sfx.js';
 export const $ = id => document.getElementById(id);
 export const h = (tag, cls, ...kids) => { const e = document.createElement(tag); if (cls) e.className = cls; kids.forEach(k => e.append(k)); return e; };
 export const S = { me: null, cache: new Map(), chats: [], contacts: [] };
+export const BOT = { id: 'ai-dixz', username: 'AI dixzChat', bio: 'Tanya apa saja, aku jawab', photoURL: 'default', isOnline: true, isBot: true };
 export const COLORS = ['#FF90E8', '#FFC900', '#23A094'];
 export const fmt = ts => ts ? (ts.toDate ? ts.toDate() : new Date(ts)).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
 export const size = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
@@ -14,6 +15,7 @@ export function avatar(u) {
   const name = u.username || u.name || '?';
   const d = h('div', 'av' + (u.isGroup ? ' grp' : ''), name[0].toUpperCase());
   d.style.background = COLORS[name.charCodeAt(0) % 3];
+  if (u.isBot) { d.textContent = 'AI'; d.style.background = '#23A094'; }
   if (/^https?:/.test(u.photoURL || '')) { d.textContent = ''; const i = h('img'); i.src = u.photoURL; i.alt = ''; d.append(i); }
   return d;
 }

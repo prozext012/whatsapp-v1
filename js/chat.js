@@ -1,9 +1,8 @@
 // Ruang chat: pesan teks/media, centang, mengetik, hapus, suara, lokasi, grup
-import { db, doc, setDoc, updateDoc, addDoc, collection, query, orderBy, limitToLast, where, limit, getDocs, onSnapshot, serverTimestamp, increment } from './firebase.js';
+import { auth, db, doc, setDoc, updateDoc, addDoc, collection, query, orderBy, limitToLast, where, limit, getDocs, onSnapshot, serverTimestamp, increment } from './firebase.js';
 import { $, h, S, avatar, toast, fmt, size, dur, ico, getUser } from './ui.js';
 import { sfx } from './sfx.js';
-import { compressImage, upload, removeFile, getLocation, startRecorder, dHash, bandsOf } from './media.js';
-import { checkReceipt } from './receipt.js';
+import { compressImage, upload, removeFile, getLocation, startRecorder } from './media.js';
 
 let cur = null, unsubM = null, unsubC = null, unsubU = null, tInt = null, seen = new Set(), first = true;
 let rec = null, recMode = '', recT = null, held = false, lastTyp = 0, menuCtx = null, playing = null;
@@ -29,7 +28,7 @@ async function openRoom(cfg) {
   unsubM?.(); unsubC?.(); unsubU?.();
   unsubM = onSnapshot(query(collection(db, 'chats', cfg.id, 'messages'), orderBy('timestamp'), limitToLast(100)), renderMsgs, e => toast('Gagal memuat pesan: ' + e.code));
   unsubC = onSnapshot(doc(db, 'chats', cfg.id), s => { cfg.data = s.data() || {}; updateSub(); }, () => {});
-  if (cfg.type === 'direct') unsubU = onSnapshot(doc(db, 'users', cfg.peer.id), s => { if (s.exists()) { cfg.peer = { id: cfg.peer.id, ...s.data() }; S.cache.set(cfg.peer.id, cfg.peer); updateSub(); } });
+  if (cfg.type === 'direct' && !cfg.peer.isBot) unsubU = onSnapshot(doc(db, 'users', cfg.peer.id), s => { if (s.exists()) { cfg.peer = { id: cfg.peer.id, ...s.data() }; S.cache.set(cfg.peer.id, cfg.peer); updateSub(); } });
   clearInterval(tInt); tInt = setInterval(updateSub, 1500); updateSub();
   const c = S.chats.find(x => x.id === cfg.id);
   if (c?.unread?.[S.me.id]) setDoc(doc(db, 'chats', cfg.id), { unread: { [S.me.id]: 0 } }, { merge: true }).catch(() => {});
@@ -42,10 +41,11 @@ function updateSub() {
   if (!cur) return;
   const d = cur.data || {}, me = S.me.id;
   const typers = Object.entries(d.typing || {}).filter(([u, t]) => u !== me && typeof t === 'number' && Date.now() - t < 5000).map(([u]) => S.cache.get(u)?.username || 'seseorang');
-  const was = typEl.hidden; typEl.hidden = !typers.length;
+  const bt = !!(cur.peer?.isBot && cur.botBusy), was = typEl.hidden; typEl.hidden = !(typers.length || bt);
   if (was && !typEl.hidden) { const b = $('msgs'); b.scrollTop = b.scrollHeight; }
   let sub;
-  if (typers.length) sub = cur.type === 'group' ? typers.join(', ') + ' mengetik...' : 'sedang mengetik...';
+  if (bt) sub = 'sedang mengetik...';
+  else if (typers.length) sub = cur.type === 'group' ? typers.join(', ') + ' mengetik...' : 'sedang mengetik...';
   else if (cur.type === 'group') sub = cur.participants.length + ' anggota';
   else { const p = cur.peer; sub = p.isOnline ? 'online' : p.lastSeen ? 'terlihat ' + fmt(p.lastSeen) : 'offline'; }
   $('rSub').textContent = sub;
@@ -79,7 +79,7 @@ function content(m) {
   }
 }
 function attachMenu(b, id, ref, m, mine) {
-  let t, x, y; const open = () => { menuCtx = { ref, m, mine }; $('mmCopy').hidden = m.type !== 'text' || m.deleted; $('mmDel').hidden = !mine || m.deleted; $('mmCheck').hidden = m.type !== 'image' || m.deleted; if ($('mmCopy').hidden && $('mmDel').hidden && $('mmCheck').hidden) return; $('msgMenu').hidden = false; sfx('open'); };
+  let t, x, y; const open = () => { menuCtx = { ref, m, mine }; $('mmCopy').hidden = m.type !== 'text' || m.deleted; $('mmDel').hidden = !mine || m.deleted; if ($('mmCopy').hidden && $('mmDel').hidden) return; $('msgMenu').hidden = false; sfx('open'); };
   b.addEventListener('pointerdown', e => { x = e.clientX; y = e.clientY; t = setTimeout(open, 450); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => clearTimeout(t)));
   b.addEventListener('pointermove', e => { if (Math.abs(e.clientX - x) > 8 || Math.abs(e.clientY - y) > 8) clearTimeout(t); });
@@ -96,6 +96,8 @@ function bubble(id, ref, m, pending, fresh) {
 function renderMsgs(snap) {
   const box = $('msgs'), stick = !box.children.length || box.scrollHeight - box.scrollTop - box.clientHeight < 140;
   box.replaceChildren(); let newIn = false; const incoming = [];
+  if (cur.peer?.isBot) box.append(h('div', 'empty', 'AI dixzChat menjawab lewat layanan Gemini. Pesan di chat ini dikirim ke Google untuk diproses. Jangan kirim data sensitif.'));
+  cur.hist = snap.docs.map(d => d.data()).filter(m => m.type === 'text' && !m.deleted && m.text).slice(-12).map(m => ({ role: m.senderId === 'ai-dixz' ? 'model' : 'user', text: m.text }));
   snap.docs.forEach(d => {
     const m = d.data({ serverTimestamps: 'estimate' }), fresh = !first && !seen.has(d.id); seen.add(d.id);
     if (fresh && m.senderId !== S.me.id) newIn = true;
@@ -117,7 +119,7 @@ async function push(msg, preview) {
   const ref = await ensureChat(), un = {};
   cur.participants.filter(p => p !== S.me.id).forEach(o => un[o] = increment(1));
   await setDoc(ref, { lastMessage: preview, lastMessageTime: serverTimestamp(), lastSender: S.me.id, unread: un, typing: { [S.me.id]: 0 } }, { merge: true });
-  await addDoc(collection(ref, 'messages'), { senderId: S.me.id, timestamp: serverTimestamp(), status: 'sent', deleted: false, ...msg });
+  return addDoc(collection(ref, 'messages'), { senderId: S.me.id, timestamp: serverTimestamp(), status: 'sent', deleted: false, ...msg });
 }
 function progressBubble(label) {
   const fill = h('i'), b = h('div', 'bub out pop', label, h('div', 'prog', fill)), box = $('msgs');
@@ -130,14 +132,11 @@ async function sendMedia(file, kind) {
   const label = kind === 'image' ? 'Foto' : kind === 'video' ? 'Video' : file.name, p = progressBubble('Mengunggah ' + label + '...');
   try {
     await ensureChat();
-    const blob = kind === 'image' ? await compressImage(file) : file, ts = Date.now();
-    const ph = kind === 'image' ? await dHash(file).catch(() => null) : null;
-    const path = `chats/${cur.id}/${S.me.id}/${ts}_${kind === 'image' ? 'foto.jpg' : safe(file.name)}`;
+    const blob = kind === 'image' ? await compressImage(file) : file;
+    const path = `chats/${cur.id}/${S.me.id}/${Date.now()}_${kind === 'image' ? 'foto.jpg' : safe(file.name)}`;
     const up = await upload(path, blob, p.set, blob.type || file.type);
     const msg = { type: kind, mediaUrl: up.url, mediaPath: up.path }; if (kind === 'file') { msg.fileName = file.name; msg.size = file.size; }
-    if (ph) { msg.phash = ph; msg.upTs = ts; }
     await push(msg, kind === 'file' ? 'Dokumen: ' + file.name : label); sfx('send');
-    if (ph) addDoc(collection(db, 'imageHashes'), { hash: ph, bands: bandsOf(ph), sender: S.me.id, ts }).catch(() => {});
   } catch (e) { toast('Gagal mengirim: ' + (e.message || e.code)); } finally { p.done(); }
 }
 async function recStart(mode) {
@@ -162,7 +161,24 @@ async function recEnd(send) {
     await push({ type: 'audio', mediaUrl: up.url, mediaPath: up.path, duration }, 'Pesan suara'); sfx('send');
   } catch (e) { toast('Gagal mengirim suara: ' + (e.message || e.code)); } finally { p.done(); }
 }
-const toggleSend = () => { const has = !!$('rInput').value.trim(); $('bSend').hidden = !has; $('bMic').hidden = has; };
+const toggleSend = () => { const has = !!$('rInput').value.trim(); $('bSend').hidden = !has; $('bMic').hidden = has || !!cur?.peer?.isBot; $('bAttach').hidden = !!cur?.peer?.isBot; };
+
+/* ---------- AI dixzChat (kontak bot) ---------- */
+async function askBot(msgRef, text) {
+  const room = cur; room.botBusy = true; updateSub();
+  try {
+    const hist = [...(room.hist || [])];
+    if (!hist.length || hist[hist.length - 1].text !== text) hist.push({ role: 'user', text });
+    const idToken = await auth.currentUser.getIdToken();
+    const r = await fetch('/api/ai-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, messages: hist }) });
+    const j = await r.json(); if (!r.ok) throw new Error(j.error || 'AI gagal menjawab');
+    const ref = doc(db, 'chats', room.id), inRoom = cur && cur.id === room.id;
+    await setDoc(ref, { lastMessage: j.reply.slice(0, 80), lastMessageTime: serverTimestamp(), lastSender: 'ai-dixz', ...(inRoom ? {} : { unread: { [S.me.id]: increment(1) } }) }, { merge: true });
+    await addDoc(collection(ref, 'messages'), { senderId: 'ai-dixz', timestamp: serverTimestamp(), status: 'read', deleted: false, type: 'text', text: j.reply });
+    updateDoc(msgRef, { status: 'read' }).catch(() => {});
+  } catch (e) { toast(e.message || 'AI gagal menjawab'); }
+  finally { room.botBusy = false; if (cur === room) updateSub(); }
+}
 
 /* ---------- centang "diterima" (dipanggil saat ada chat masuk) ---------- */
 export async function markDelivered(id) {
@@ -183,7 +199,7 @@ export function initChat() {
   $('rForm').onsubmit = async e => {
     e.preventDefault(); const t = $('rInput').value.trim(); if (!t || !cur) return;
     $('rInput').value = ''; toggleSend(); sfx('send');
-    try { await push({ type: 'text', text: t }, t.slice(0, 80)); } catch (err) { toast('Gagal kirim: ' + err.code); $('rInput').value = t; toggleSend(); }
+    try { const mref = await push({ type: 'text', text: t }, t.slice(0, 80)); if (cur?.peer?.isBot) askBot(mref, t); } catch (err) { toast('Gagal kirim: ' + err.code); $('rInput').value = t; toggleSend(); }
   };
   $('bAttach').onclick = () => { $('attach').hidden = false; sfx('open'); };
   $('tMedia').onclick = () => { $('attach').hidden = true; $('fMedia').click(); };
@@ -200,7 +216,6 @@ export function initChat() {
   ['pointerup', 'pointercancel'].forEach(ev => mic.addEventListener(ev, () => { held = false; if (recMode === 'hold') recEnd(true); }));
   mic.addEventListener('contextmenu', e => e.preventDefault());
   $('rCancel').onclick = () => recEnd(false); $('rSend').onclick = () => recEnd(true);
-  $('mmCheck').onclick = () => { $('msgMenu').hidden = true; checkReceipt(menuCtx.m); };
   $('mmCancel').onclick = () => $('msgMenu').hidden = true;
   $('mmCopy').onclick = () => { navigator.clipboard?.writeText(menuCtx.m.text || ''); $('msgMenu').hidden = true; toast('Teks disalin.', 'ok'); };
   $('mmDel').onclick = async () => {

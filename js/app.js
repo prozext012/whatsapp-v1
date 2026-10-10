@@ -1,6 +1,6 @@
 // Inti aplikasi: siklus login, navigasi, beranda, kontak otomatis, grup, PWA
 import { auth, db, onAuthStateChanged, doc, getDoc, writeBatch, getDocs, setDoc, updateDoc, collection, query, where, orderBy, limit, startAfter, onSnapshot, serverTimestamp } from './firebase.js';
-import { $, h, S, avatar, toast, wipe, fmt, getUser, other, ico } from './ui.js';
+import { $, h, S, avatar, toast, wipe, fmt, getUser, other, ico, BOT } from './ui.js';
 import { sfx } from './sfx.js';
 import { initAuth } from './auth.js';
 import { initChat, openDirect, openGroup, closeRoom, markDelivered, currentChatId } from './chat.js';
@@ -27,7 +27,7 @@ function contactRow(u, i = 0, extra) {
   b.style.setProperty('--i', i); return b;
 }
 async function loadContacts(reset) {
-  if (reset) { S.contacts = []; lastDoc = null; hasMore = true; }
+  if (reset) { S.contacts = [BOT]; lastDoc = null; hasMore = true; }
   if (!hasMore) return;
   try {
     const s = await getDocs(query(collection(db, 'users'), orderBy('usernameLower'), ...(lastDoc ? [startAfter(lastDoc)] : []), limit(30)));
@@ -50,7 +50,7 @@ $('sSearch').oninput = e => {
     if (!q) { results = []; return renderSheet(); }
     try {
       const s = await getDocs(query(collection(db, 'users'), orderBy('usernameLower'), where('usernameLower', '>=', q), where('usernameLower', '<=', q + '\uf8ff'), limit(30)));
-      results = s.docs.filter(d => d.id !== S.me.id).map(d => ({ id: d.id, ...d.data() })); results.forEach(u => S.cache.set(u.id, u)); renderSheet();
+      results = s.docs.filter(d => d.id !== S.me.id).map(d => ({ id: d.id, ...d.data() })); results.forEach(u => S.cache.set(u.id, u)); if ('ai dixzchat'.includes(q)) results.unshift(BOT); renderSheet();
     } catch (err) { toast('Pencarian gagal: ' + err.code); }
   }, 300);
 };
@@ -62,7 +62,7 @@ $('more').onclick = () => loadContacts(false);
 const picked = new Set();
 function renderGroupList() {
   const L = $('gList'); L.replaceChildren();
-  S.contacts.forEach((u, i) => { const b = contactRow(u, i, picked.has(u.id) ? ' sel' : ''); b.onclick = () => { picked.has(u.id) ? picked.delete(u.id) : picked.add(u.id); b.classList.toggle('sel'); }; L.append(b); });
+  S.contacts.filter(u => !u.isBot).forEach((u, i) => { const b = contactRow(u, i, picked.has(u.id) ? ' sel' : ''); b.onclick = () => { picked.has(u.id) ? picked.delete(u.id) : picked.add(u.id); b.classList.toggle('sel'); }; L.append(b); });
   if (hasMore) { const m = h('button', 'btn white', 'Muat lagi'); m.onclick = () => loadContacts(false); L.append(m); }
 }
 $('gNew').onclick = () => { picked.clear(); $('gName').value = ''; $('sheet').hidden = true; $('gsheet').hidden = false; renderGroupList(); sfx('open'); };
@@ -121,7 +121,7 @@ function teardown() {
   ['sheet', 'gsheet', 'astSheet', 'attach', 'msgMenu'].forEach(id => $(id).hidden = true);
 }
 function start() {
-  if (started) return; started = true; showApp();
+  if (started) return; started = true; S.cache.set(BOT.id, BOT); showApp();
   setPresence(true); fillSettings(); listenChats(); loadContacts(true); startStatus(); go('home');
 }
 async function heal(user) { // profil hilang (pendaftaran sebelumnya gagal di tengah jalan): buat otomatis
