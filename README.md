@@ -22,3 +22,10 @@ dokumen · lokasi (link Google Maps) · status 24 jam (teks/foto) · foto profil
 - Notifikasi saat aplikasi ditutup belum ada (butuh FCM + backend/Cloud Functions).
 - Lampiran bisa dibaca siapa pun yang sudah login dan tahu URL-nya (URL berisi token acak), bukan hanya anggota chat.
 - Setelah deploy ulang, buka dua kali (service worker memuat versi lama dulu). Naikkan `V` di `sw.js` tiap rilis.
+
+## Cek struk (Gemini lewat Vercel)
+1. Buat API key di Google AI Studio.
+2. Vercel > Project > Settings > Environment Variables: tambah `GEMINI_API_KEY` (wajib). Opsional `GEMINI_MODEL` kalau nama model default sudah tidak tersedia (cek daftar model terbaru).
+3. Redeploy. Publish ulang `firestore.rules` (ada koleksi `imageHashes`).
+4. Pakai: tekan lama gambar di chat > **Cek struk**.
+Catatan: hasil hanya indikasi, bukan bukti. Gambar dikirim ke Google untuk dianalisis; cek ketentuan penggunaan data di paket gratis Gemini karena struk bisa berisi data pribadi.

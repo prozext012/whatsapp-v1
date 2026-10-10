@@ -38,6 +38,10 @@ service cloud.firestore {
               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])));
       }
     }
+    match /imageHashes/{id} {                  // sidik gambar (deteksi gambar dipakai ulang)
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.sender == request.auth.uid;
+    }
     match /statuses/{sid} {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.senderId == request.auth.uid;
