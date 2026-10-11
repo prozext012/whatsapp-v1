@@ -1,6 +1,6 @@
 // Service worker: file milik sendiri = network-first (update langsung masuk, offline pakai cache);
 // SDK Firebase & font = stale-while-revalidate. Firestore/Storage tidak di-cache.
-const V = 'dixz-v5';
+const V = 'dixz-v6';
 const SHELL = ['./', 'index.html', 'style.css', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'js/app.js', 'js/auth.js', 'js/chat.js', 'js/firebase.js', 'js/media.js', 'js/profile.js', 'js/sfx.js', 'js/status.js', 'js/ui.js'];
 const CDN = ['www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 self.addEventListener('install', e => e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting())));
