@@ -21,6 +21,11 @@ async function openRoom(cfg) {
   cur = cfg; seen = new Set(); first = true; cfg.data = {};
   $('msgs').replaceChildren(); typEl.hidden = true; $('rInput').value = ''; toggleSend();
   $('rName').textContent = cfg.title;
+  const modelPicker = $('aiModel');
+  if (modelPicker) {
+    modelPicker.hidden = !cfg.peer?.isBot;
+    if (cfg.peer?.isBot) modelPicker.value = localStorage.getItem('dixzchat-ai-model') || 'unlimited-ai';
+  }
   $('rAv').replaceChildren(avatar(cfg.type === 'group' ? { username: cfg.title, isGroup: true } : cfg.peer));
   $('sheet').hidden = true; $('gsheet').hidden = true; $('room').hidden = false; sfx('open');
   await Promise.all(cfg.participants.map(getUser));
@@ -170,7 +175,7 @@ async function askBot(msgRef, text) {
     const hist = [...(room.hist || [])];
     if (!hist.length || hist[hist.length - 1].text !== text) hist.push({ role: 'user', text });
     const idToken = await auth.currentUser.getIdToken();
-    const r = await fetch('/api/ai-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, messages: hist }) });
+    const r = await fetch('/api/ai-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, messages: hist, model: localStorage.getItem('dixzchat-ai-model') || 'unlimited-ai' }) });
     const j = await r.json(); if (!r.ok) throw new Error(j.error || 'AI gagal menjawab');
     const ref = doc(db, 'chats', room.id), inRoom = cur && cur.id === room.id;
     await setDoc(ref, { lastMessage: j.reply.slice(0, 80), lastMessageTime: serverTimestamp(), lastSender: 'ai-dixz', ...(inRoom ? {} : { unread: { [S.me.id]: increment(1) } }) }, { merge: true });
@@ -192,6 +197,11 @@ export async function markDelivered(id) {
 /* ---------- pasang event (sekali) ---------- */
 export function initChat() {
   $('rBack').onclick = closeRoom;
+  const modelPicker = $('aiModel');
+  if (modelPicker) modelPicker.onchange = () => {
+    localStorage.setItem('dixzchat-ai-model', modelPicker.value);
+    toast('Model AI diganti: ' + modelPicker.options[modelPicker.selectedIndex].text, 'ok');
+  };
   $('rInput').addEventListener('input', () => {
     toggleSend(); const n = Date.now();
     if (cur && Object.keys(cur.data || {}).length && n - lastTyp > 2500) { lastTyp = n; updateDoc(doc(db, 'chats', cur.id), { ['typing.' + S.me.id]: n }).catch(() => {}); }
