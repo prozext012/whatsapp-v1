@@ -32,7 +32,8 @@ module.exports = async (req, res) => {
     const transcript = turns.map(t => `${t.role === 'model' ? 'Asisten' : 'Pengguna'}: ${t.parts.map(p => p.text).join(' ')}`).join('\n');
     const prompt = `${SYSTEM}\n\nPercakapan terakhir:\n${transcript}`.slice(0, 9000);
     const params = new URLSearchParams({ prompt, session: `dixz-${uid}`, apikey: process.env.SYNOXCLOUD_API_KEY || 'FREE' });
-    const upstream = await fetch(`https://api.synoxcloud.xyz/ai-chat/unlimited-ai?${params.toString()}`, { method: 'GET', headers: { 'Accept': 'application/json' } });
+    const endpoint = process.env.SYNOXCLOUD_ENDPOINT || 'https://api.synoxcloud.xyz/ai-chat/unlimited-ai';
+    const upstream = await fetch(`${endpoint}?${params.toString()}`, { method: 'GET', headers: { 'Accept': 'application/json' } });
     let data;
     try { data = await upstream.json(); } catch { data = null; }
     if (!upstream.ok || data?.status !== true) return res.status(502).json({ error: data?.message || data?.error || `Layanan AI gagal (HTTP ${upstream.status})` });
