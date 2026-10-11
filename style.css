@@ -112,3 +112,7 @@ label{display:block;font-size:12px;font-weight:700;color:#333;margin-bottom:6px}
 #vBody img{max-width:100%;max-height:100%;object-fit:contain}
 .zone{position:absolute;top:120px;bottom:0;width:40%;background:none;border:0;z-index:2}.zone.l{left:0}.zone.r{right:0}
 #lightbox{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;animation:pop .3s var(--spring)}#lightbox img{max-width:96%;max-height:92%;border:3px solid #fff}
+
+/* Pemilih model AI hanya muncul saat membuka kontak AI dixzChat. */
+.ai-model{display:block;max-width:100%;margin-top:5px;padding:5px 8px;border:2px solid #000;border-radius:8px;background:#fff;color:#111;font:600 12px inherit}
+.ai-model[hidden]{display:none}

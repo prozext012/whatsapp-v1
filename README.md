@@ -23,9 +23,13 @@ dokumen · lokasi (link Google Maps) · status 24 jam (teks/foto) · foto profil
 - Lampiran bisa dibaca siapa pun yang sudah login dan tahu URL-nya (URL berisi token acak), bukan hanya anggota chat.
 - Setelah deploy ulang, buka dua kali (service worker memuat versi lama dulu). Naikkan `V` di `sw.js` tiap rilis.
 
-## AI dixzChat (kontak bot, Gemini lewat Vercel)
-Kontak "AI dixzChat" muncul otomatis di daftar kontak. Pesan teks ke kontak ini dijawab oleh Gemini lewat `api/ai-chat.js`.
-1. Vercel > Settings > Environment Variables: `GEMINI_API_KEY` (wajib), `GEMINI_MODEL` (opsional, default `gemini-flash-latest`). Redeploy setelah mengubah.
-2. Publish ulang `firestore.rules` (ada aturan balasan AI).
-3. Hapus file lama `api/analyze-receipt.js` dan `js/receipt.js` dari repo (fitur cek struk sudah dicabut).
-Catatan: pesan di chat AI dikirim ke Google untuk diproses; jangan kirim data sensitif. Ada batas 12 pesan/menit per akun dan jatah gratis Gemini.
+## AI dixzChat (SynoxCloud lewat backend Vercel)
+Kontak "AI dixzChat" muncul otomatis di daftar kontak. Saat chat AI dibuka, pilih model dari dropdown. Frontend hanya mengirim pesan dan nama model ke endpoint internal `/api/ai-chat`; URL SynoxCloud dan request ke provider diproses di `api/ai-chat.js`, bukan di browser/APK.
+
+Model yang terpasang: Unlimited AI (`prompt`), DeepSeek R1 (`q`), GPT-4o Mini (`prompt`), dan Gemini 3.1 Flash Lite Preview (`pesan`). Pemilihan model disimpan di browser masing-masing.
+
+1. Vercel > Settings > Environment Variables: opsional `SYNOXCLOUD_API_KEY`; jika tidak ada, backend memakai `FREE`.
+2. Deploy ulang setelah mengubah kode.
+3. Backend memverifikasi Firebase login dan menerapkan batas sederhana 12 pesan/menit per akun.
+
+Catatan: endpoint Gemini 3.1 Flash Lite Preview pernah mengembalikan `wrong params` saat diuji dari halaman provider. Kode sudah meneruskan parameter `pesan` sesuai screenshot, tetapi endpoint itu tetap perlu dites ulang; jika SynoxCloud menolak parameter, pilih model lain sampai parameter resminya dikonfirmasi.
