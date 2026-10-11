@@ -96,7 +96,7 @@ function bubble(id, ref, m, pending, fresh) {
 function renderMsgs(snap) {
   const box = $('msgs'), stick = !box.children.length || box.scrollHeight - box.scrollTop - box.clientHeight < 140;
   box.replaceChildren(); let newIn = false; const incoming = [];
-  if (cur.peer?.isBot) box.append(h('div', 'empty', 'AI dixzChat menjawab lewat layanan Gemini. Pesan di chat ini dikirim ke Google untuk diproses. Jangan kirim data sensitif.'));
+  if (cur.peer?.isBot) box.append(h('div', 'empty', 'AI dixzChat menjawab lewat layanan AI pihak ketiga. Jangan kirim data sensitif. Jangan kirim data sensitif.'));
   cur.hist = snap.docs.map(d => d.data()).filter(m => m.type === 'text' && !m.deleted && m.text).slice(-12).map(m => ({ role: m.senderId === 'ai-dixz' ? 'model' : 'user', text: m.text }));
   snap.docs.forEach(d => {
     const m = d.data({ serverTimestamps: 'estimate' }), fresh = !first && !seen.has(d.id); seen.add(d.id);
